@@ -1,0 +1,25 @@
+inherit_gem:
+  rubocop-shopify: rubocop.yml
+
+require:
+  - rubocop-sorbet
+
+AllCops:
+  Exclude:
+    - "bin/**/*"
+    - "sorbet/**/*"
+  SuggestExtensions: false
+
+Sorbet/EnforceSignatures:
+  Enabled: true
+
+Sorbet/ForbidTypeAliasedShapes:
+  Enabled: true
+
+Sorbet/RedundantExtendTSig:
+  Enabled: true
+  Exclude:
+    - "lib/minic.rb"
+
+Sorbet/TrueSigil:
+  Enabled: true
