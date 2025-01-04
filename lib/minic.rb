@@ -12,5 +12,4 @@ class Module
   include T::Sig
 end
 
-# Temporary sanity check
-puts "Hello, World!"
+require_relative "fileset"
