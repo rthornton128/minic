@@ -13,3 +13,4 @@ class Module
 end
 
 require_relative "fileset"
+require_relative "lexer"
