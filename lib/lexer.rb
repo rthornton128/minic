@@ -6,6 +6,7 @@
 # 2. Peek at the next token but not advance the offset.
 # 3. Move the offset to the next token without scanning it.
 
+require_relative "lexer/error"
 require_relative "lexer/token"
 
 module Minic
@@ -14,13 +15,32 @@ module Minic
     DIGIT = T.let(("0"..."9").to_a, T::Array[String])
     LETTER = T.let([*"a".."z", *"A".."Z"], T::Array[String])
     ALPHANUMERIC = T.let(LETTER + DIGIT, T::Array[String])
-    OPERATORS = ["!", "-", "+", "*", "/", "%", "&&", "||", "==", "<", ">"]
-    KEYWORDS = ["void", "bool", "int", "double", "string", "while", "if", "else", "return"]
+    KEYWORDS = ["void", "bool", "int", "double", "string", "while", "if", "else", "return", "true", "false"]
     WHITESPACE = [" ", "\t", "\r", "\n"]
-    TOKENS = {
-      ";" => :SemiColon,
-      "/" => :ForwardSlash,
-    }
+    SYMBOLS = T.let(
+      {
+        ";" => :SemiColon,
+        "=" => :Equal,
+        "(" => :LeftParen,
+        ")" => :RightParen,
+        "{" => :LeftBrace,
+        "}" => :RightBrace,
+        "," => :Comma,
+        "." => :Dot,
+        '"' => :DoubleQuote,
+        "/" => :ForwardSlash,
+        "!" => :Exclaimation,
+        "+" => :Plus,
+        "*" => :Star,
+        "%" => :Percent,
+        "&&" => :And,
+        "||" => :Or,
+        "==" => :Equality,
+        "<" => :LessThan,
+        ">" => :GreaterThan,
+      },
+      T::Hash[String, Symbol],
+    )
 
     sig { params(body: String).void }
     def initialize(body:)
@@ -38,15 +58,12 @@ module Minic
 
       return scan_identifier if LETTER.include?(literal)
       return scan_numeric if DIGIT.include?(literal)
+      return scan_symbol(literal + current_char) if SYMBOLS.keys.include?(literal + current_char)
+      return scan_symbol(literal) if SYMBOLS.keys.include?(literal)
 
-      case literal
-      when "foo"
-        Token.new(token: :Foo, literal:, offset:)
-      else
-        return Token.new(token: :Eof, literal:, offset:) if eof?
+      raise InvalidTokenError.new("Unexpected token", literal, offset) unless eof?
 
-        Token.new(token: :Invalid, literal:, offset:)
-      end
+      Token.new(token: :Eof, literal:, offset:)
     end
 
     sig { void }
@@ -56,9 +73,10 @@ module Minic
       @reading_offset += 1
     end
 
-    sig { returns(Token) }
+    sig { returns(String) }
     def peek
-      scan.tap { @reading_offset = @offset }
+      @reading_offset += 1
+      current_char.tap { @reading_offset = @offset }
     end
 
     private
@@ -106,12 +124,40 @@ module Minic
         advance
       end
 
+      return scan_double(literal) if current_char == "."
+
+      raise InvalidIntegerError.new(
+        "Integer may not start with zero",
+        literal,
+        offset,
+      ) if literal[0] == "0" && literal.size > 1
+
       Token.new(token: :Integer, literal:, offset:)
+    end
+
+    sig { params(literal: String).returns(Token) }
+    def scan_double(literal)
+      literal += current_char
+      advance
+
+      while DIGIT.include?(current_char)
+        literal += current_char
+        advance
+      end
+
+      Token.new(token: :Double, literal:, offset:)
+    end
+
+    sig { params(literal: String).returns(Token) }
+    def scan_symbol(literal)
+      Token.new(token: T.must(SYMBOLS[literal]), literal:, offset:).tap { advance }
     end
 
     sig { void }
     def skip_whitespace
-      advance if WHITESPACE.include?(current_char)
+      return if eof?
+
+      advance while WHITESPACE.include?(current_char)
     end
   end
 end
