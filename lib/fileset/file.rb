@@ -40,6 +40,8 @@ module Minic
           return index + 1 if line >= offset
         end
 
+        return @lines.size if offset < size
+
         raise FileSet::InvalidOffsetError, "offset not within file"
       end
 

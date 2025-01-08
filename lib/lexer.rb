@@ -9,6 +9,8 @@
 require_relative "lexer/error"
 require_relative "lexer/token"
 
+require "fileset"
+
 module Minic
   class Lexer
     DIGIT_NON_ZERO = T.let(("1"..."9").to_a, T::Array[String])
@@ -42,9 +44,10 @@ module Minic
       T::Hash[String, Symbol],
     )
 
-    sig { params(body: String).void }
-    def initialize(body:)
-      @body = body
+    sig { params(file: FileSet::File).void }
+    def initialize(file:)
+      @body = T.let(file.body, String)
+      @file = file
       @offset = T.let(0, Integer)
       @reading_offset = T.let(0, Integer)
     end
@@ -157,7 +160,10 @@ module Minic
     def skip_whitespace
       return if eof?
 
-      advance while WHITESPACE.include?(current_char)
+      while WHITESPACE.include?(current_char)
+        @file << @reading_offset if current_char == "\n"
+        advance
+      end
     end
   end
 end
