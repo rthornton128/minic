@@ -76,6 +76,11 @@ module Minic
       @reading_offset += 1
     end
 
+    sig { returns(T::Boolean) }
+    def eof?
+      @body.size <= @reading_offset
+    end
+
     sig { returns(String) }
     def peek
       @reading_offset += 1
@@ -97,11 +102,6 @@ module Minic
       return "" if eof?
 
       T.must(@body[@reading_offset])
-    end
-
-    sig { returns(T::Boolean) }
-    def eof?
-      @body.size <= @reading_offset
     end
 
     sig { returns(Token) }
