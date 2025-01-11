@@ -2,6 +2,10 @@
 # frozen_string_literal: true
 
 class Node
+  extend T::Helpers
+
+  abstract!
+
   sig { returns(String) }
   attr_reader :literal
 
@@ -14,4 +18,7 @@ class Node
     @literal = literal
     @offset = offset
   end
+
+  sig { abstract.params(block: T.proc.params(node: Node).void).void }
+  def walk(&block); end
 end

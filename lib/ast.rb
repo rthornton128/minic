@@ -13,5 +13,11 @@ module Minic
     def initialize(program:)
       @program = T.let(program, Program)
     end
+
+    sig { params(block: T.proc.params(node: Node).void).void }
+    def walk(&block)
+      yield(program)
+      program.walk(&block)
+    end
   end
 end

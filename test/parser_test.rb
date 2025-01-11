@@ -12,9 +12,15 @@ module Minic
 
       ast = parser.parse
 
-      assert_equal("", ast.program.literal)
-      assert_equal(0, ast.program.offset)
-      assert_equal(0, ast.program.length)
+      index = 0
+      ast.walk do |node|
+        assert_instance_of(AbstractSyntaxTree::Program, node)
+        assert_equal("", node.literal)
+        assert_equal(0, node.offset)
+        assert_equal(0, node.length)
+        index += 1
+      end
+      assert_equal(1, index, "Number of nodes must match")
     end
   end
 end
