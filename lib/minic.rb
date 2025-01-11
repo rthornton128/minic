@@ -14,3 +14,4 @@ end
 
 require_relative "fileset"
 require_relative "lexer"
+require_relative "parser"
