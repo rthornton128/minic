@@ -4,7 +4,8 @@
 module Minic
   class AbstractSyntaxTree
     Declaration = T.type_alias { T.any(FunctionDeclaration, VariableDeclaration) }
-    Expression = T.type_alias { IntegerLiteral }
+    Literal = T.type_alias { T.any(BooleanLiteral, DoubleLiteral, IntegerLiteral, StringLiteral) }
+    Expression = T.type_alias { Literal }
 
     class Program < Node
       sig { params(literal: String, offset: Integer).void }

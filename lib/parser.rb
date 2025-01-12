@@ -79,8 +79,14 @@ module Minic
     def scan_expression
       token = @lexer.scan
       case token.token
+      when :Boolean
+        AbstractSyntaxTree::BooleanLiteral.new(literal: token.literal, offset: token.offset)
+      when :Double
+        AbstractSyntaxTree::DoubleLiteral.new(literal: token.literal, offset: token.offset)
       when :Integer
         AbstractSyntaxTree::IntegerLiteral.new(literal: token.literal, offset: token.offset)
+      when :String
+        AbstractSyntaxTree::StringLiteral.new(literal: token.literal, offset: token.offset)
       else
         raise UnexpectedTokenError.new("expected expression", token.literal, token.offset)
       end

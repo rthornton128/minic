@@ -3,7 +3,10 @@
 
 require_relative "ast/node"
 require_relative "ast/identifier"
+require_relative "ast/boolean_literal"
+require_relative "ast/double_literal"
 require_relative "ast/integer_literal"
+require_relative "ast/string_literal"
 require_relative "ast/keyword"
 require_relative "ast/function_decl"
 require_relative "ast/variable_decl"

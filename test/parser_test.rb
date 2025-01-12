@@ -50,6 +50,62 @@ module Minic
       assert_equal(expected.size, index, "Number of nodes must match")
     end
 
+    test "parse simple variable declaration with boolean assignment" do
+      file = FileSet::File.new(body: "bool b = false;")
+      lexer = Lexer.new(file:)
+      parser = Parser.new(lexer:)
+
+      ast = parser.parse
+
+      index = 0
+      program = AbstractSyntaxTree::Program.new
+      type = AbstractSyntaxTree::Keyword.new(literal: "bool", offset: 0)
+      identifier = AbstractSyntaxTree::Identifier.new(literal: "b", offset: 5)
+      integer = AbstractSyntaxTree::BooleanLiteral.new(literal: "false", offset: 9)
+      var_decl = AbstractSyntaxTree::VariableDeclaration.new(type:, identifier:, assignment: integer)
+      expected = [program, var_decl, type, identifier, integer]
+
+      ast.walk do |node|
+        expect = T.must(expected[index])
+
+        assert_instance_of(expect.class, node)
+        assert_equal(expect.literal, node.literal)
+        assert_equal(expect.offset, node.offset)
+        assert_equal(expect.length, node.length)
+        index += 1
+      end
+
+      assert_equal(expected.size, index, "Number of nodes must match")
+    end
+
+    test "parse simple variable declaration with double assignment" do
+      file = FileSet::File.new(body: "double d = 4.2;")
+      lexer = Lexer.new(file:)
+      parser = Parser.new(lexer:)
+
+      ast = parser.parse
+
+      index = 0
+      program = AbstractSyntaxTree::Program.new
+      type = AbstractSyntaxTree::Keyword.new(literal: "double", offset: 0)
+      identifier = AbstractSyntaxTree::Identifier.new(literal: "d", offset: 7)
+      integer = AbstractSyntaxTree::DoubleLiteral.new(literal: "4.2", offset: 11)
+      var_decl = AbstractSyntaxTree::VariableDeclaration.new(type:, identifier:, assignment: integer)
+      expected = [program, var_decl, type, identifier, integer]
+
+      ast.walk do |node|
+        expect = T.must(expected[index])
+
+        assert_instance_of(expect.class, node)
+        assert_equal(expect.literal, node.literal)
+        assert_equal(expect.offset, node.offset)
+        assert_equal(expect.length, node.length)
+        index += 1
+      end
+
+      assert_equal(expected.size, index, "Number of nodes must match")
+    end
+
     test "parse simple variable declaration with integer assignment" do
       file = FileSet::File.new(body: "int x = 42;")
       lexer = Lexer.new(file:)
@@ -62,6 +118,34 @@ module Minic
       type = AbstractSyntaxTree::Keyword.new(literal: "int", offset: 0)
       identifier = AbstractSyntaxTree::Identifier.new(literal: "x", offset: 4)
       integer = AbstractSyntaxTree::IntegerLiteral.new(literal: "42", offset: 8)
+      var_decl = AbstractSyntaxTree::VariableDeclaration.new(type:, identifier:, assignment: integer)
+      expected = [program, var_decl, type, identifier, integer]
+
+      ast.walk do |node|
+        expect = T.must(expected[index])
+
+        assert_instance_of(expect.class, node)
+        assert_equal(expect.literal, node.literal)
+        assert_equal(expect.offset, node.offset)
+        assert_equal(expect.length, node.length)
+        index += 1
+      end
+
+      assert_equal(expected.size, index, "Number of nodes must match")
+    end
+
+    test "parse simple variable declaration with string assignment" do
+      file = FileSet::File.new(body: 'string s = "word";')
+      lexer = Lexer.new(file:)
+      parser = Parser.new(lexer:)
+
+      ast = parser.parse
+
+      index = 0
+      program = AbstractSyntaxTree::Program.new
+      type = AbstractSyntaxTree::Keyword.new(literal: "string", offset: 0)
+      identifier = AbstractSyntaxTree::Identifier.new(literal: "s", offset: 7)
+      integer = AbstractSyntaxTree::StringLiteral.new(literal: '"word"', offset: 11)
       var_decl = AbstractSyntaxTree::VariableDeclaration.new(type:, identifier:, assignment: integer)
       expected = [program, var_decl, type, identifier, integer]
 
