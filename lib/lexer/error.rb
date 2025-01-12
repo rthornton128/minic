@@ -3,7 +3,7 @@
 
 module Minic
   class Lexer
-    class LexerError < StandardError
+    class Error < StandardError
       sig { returns(String) }
       attr_reader :literal
 
@@ -19,7 +19,8 @@ module Minic
       end
     end
 
-    class InvalidTokenError < LexerError; end
-    class InvalidIntegerError < LexerError; end
+    class InvalidTokenError < Error; end
+    class InvalidIntegerError < Error; end
+    class UnterminatedStringError < Error; end
   end
 end

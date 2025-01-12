@@ -17,7 +17,8 @@ module Minic
     DIGIT = T.let(("0"..."9").to_a, T::Array[String])
     LETTER = T.let([*"a".."z", *"A".."Z"], T::Array[String])
     ALPHANUMERIC = T.let(LETTER + DIGIT, T::Array[String])
-    KEYWORDS = ["void", "bool", "int", "double", "string", "while", "if", "else", "return", "true", "false"]
+    KEYWORDS = ["void", "bool", "int", "double", "string", "while", "if", "else", "return"]
+    BOOLEANS = ["true", "false"]
     WHITESPACE = [" ", "\t", "\r", "\n"]
     SYMBOLS = T.let(
       {
@@ -61,6 +62,8 @@ module Minic
 
       return scan_identifier if LETTER.include?(literal)
       return scan_numeric if DIGIT.include?(literal)
+      return scan_string if literal == '"'
+      return scan_comment if literal == "/" && peek == "/"
       return scan_symbol(literal) if SYMBOLS.keys.include?(literal)
 
       raise InvalidTokenError.new("Unexpected token", literal, offset) unless eof?
@@ -111,11 +114,10 @@ module Minic
         advance
       end
 
-      if KEYWORDS.include?(literal)
-        Token.new(token: :Keyword, literal:, offset:)
-      else
-        Token.new(token: :Identifier, literal:, offset:)
-      end
+      return Token.new(token: :Keyword, literal:, offset:) if KEYWORDS.include?(literal)
+      return Token.new(token: :Boolean, literal:, offset:) if BOOLEANS.include?(literal)
+
+      Token.new(token: :Identifier, literal:, offset:)
     end
 
     sig { returns(Token) }
@@ -148,6 +150,38 @@ module Minic
       end
 
       Token.new(token: :Double, literal:, offset:)
+    end
+
+    sig { returns(Token) }
+    def scan_string
+      literal = current_char
+      advance
+
+      until current_char == '"' || current_char == "\n" || eof?
+        literal += current_char
+        advance
+      end
+
+      final_quote = current_char
+      raise UnterminatedStringError.new(
+        "string was not terminated by end of line",
+        literal,
+        offset,
+      ) if final_quote != '"'
+
+      literal += final_quote
+      Token.new(token: :String, literal:, offset:)
+    end
+
+    sig { returns(Token) }
+    def scan_comment
+      literal = ""
+      until current_char == "\n" || eof?
+        literal += current_char
+        advance
+      end
+
+      Token.new(token: :Comment, literal:, offset:)
     end
 
     sig { params(literal: String).returns(Token) }

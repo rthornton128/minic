@@ -107,6 +107,59 @@ module Minic
       assert_equal(0, token.offset)
     end
 
+    test "returns boolean for true literal" do
+      lexer = Lexer.new(file: FileSet::File.new(body: "true"))
+      token = lexer.scan
+
+      assert_equal(:Boolean, token.token)
+      assert_equal("true", token.literal)
+      assert_equal(0, token.offset)
+    end
+
+    test "returns string for string literal" do
+      lexer = Lexer.new(file: FileSet::File.new(body: '"hello"'))
+      token = lexer.scan
+
+      assert_equal(:String, token.token)
+      assert_equal('"hello"', token.literal)
+      assert_equal(0, token.offset)
+    end
+
+    test "raises exception for unterminated string literal by end of line" do
+      lexer = Lexer.new(file: FileSet::File.new(body: '"hello
+      '))
+      assert_raises(Minic::Lexer::UnterminatedStringError) do
+        lexer.scan
+      end
+    end
+
+    test "raises exception for unterminated string literal by end of file" do
+      lexer = Lexer.new(file: FileSet::File.new(body: '"hello'))
+      assert_raises(Minic::Lexer::UnterminatedStringError) do
+        lexer.scan
+      end
+    end
+
+    test "returns comment for comment literal" do
+      lexer = Lexer.new(file: FileSet::File.new(body: "// comment"))
+      token = lexer.scan
+
+      assert_equal(:Comment, token.token)
+      assert_equal("// comment", token.literal)
+      assert_equal(0, token.offset)
+    end
+
+    test "returns comment for end of line comment literal" do
+      lexer = Lexer.new(file: FileSet::File.new(body: "a; // comment"))
+      lexer.scan
+      lexer.scan
+      token = lexer.scan
+
+      assert_equal(:Comment, token.token)
+      assert_equal("// comment", token.literal)
+      assert_equal(3, token.offset)
+    end
+
     test "returns all tokens for equation" do
       lexer = Lexer.new(file: FileSet::File.new(body: "1 + 2"))
 
