@@ -45,6 +45,10 @@ module Minic
       T::Hash[String, Symbol],
     )
 
+    class InvalidTokenError < Error; end
+    class InvalidIntegerError < Error; end
+    class UnterminatedStringError < Error; end
+
     sig { params(file: FileSet::File).void }
     def initialize(file:)
       @body = T.let(file.body, String)
