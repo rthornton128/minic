@@ -13,5 +13,6 @@ class Module
 end
 
 require_relative "fileset"
+require_relative "error"
 require_relative "lexer"
 require_relative "parser"

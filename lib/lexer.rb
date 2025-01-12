@@ -6,7 +6,6 @@
 # 2. Peek at the next token but not advance the offset.
 # 3. Move the offset to the next token without scanning it.
 
-require_relative "lexer/error"
 require_relative "lexer/token"
 
 require "fileset"
