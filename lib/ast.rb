@@ -16,7 +16,7 @@ module Minic
   class AbstractSyntaxTree
     Declaration = T.type_alias { T.any(FunctionDeclaration, VariableDeclaration) }
     Literal = T.type_alias { T.any(BooleanLiteral, DoubleLiteral, IntegerLiteral, StringLiteral) }
-    Expression = T.type_alias { Literal }
+    Expression = T.type_alias { T.any(Literal, Identifier) }
 
     sig { returns(Program) }
     attr_accessor :program

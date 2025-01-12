@@ -161,5 +161,33 @@ module Minic
 
       assert_equal(expected.size, index, "Number of nodes must match")
     end
+
+    test "parse simple variable declaration with identifier assignment" do
+      file = FileSet::File.new(body: "int a = b;")
+      lexer = Lexer.new(file:)
+      parser = Parser.new(lexer:)
+
+      ast = parser.parse
+
+      index = 0
+      program = AbstractSyntaxTree::Program.new
+      type = AbstractSyntaxTree::Keyword.new(literal: "int", offset: 0)
+      lhs = AbstractSyntaxTree::Identifier.new(literal: "a", offset: 4)
+      rhs = AbstractSyntaxTree::Identifier.new(literal: "b", offset: 8)
+      var_decl = AbstractSyntaxTree::VariableDeclaration.new(type:, identifier: lhs, assignment: rhs)
+      expected = [program, var_decl, type, lhs, rhs]
+
+      ast.walk do |node|
+        expect = T.must(expected[index])
+
+        assert_instance_of(expect.class, node)
+        assert_equal(expect.literal, node.literal)
+        assert_equal(expect.offset, node.offset)
+        assert_equal(expect.length, node.length)
+        index += 1
+      end
+
+      assert_equal(expected.size, index, "Number of nodes must match")
+    end
   end
 end

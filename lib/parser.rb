@@ -87,6 +87,8 @@ module Minic
         AbstractSyntaxTree::IntegerLiteral.new(literal: token.literal, offset: token.offset)
       when :String
         AbstractSyntaxTree::StringLiteral.new(literal: token.literal, offset: token.offset)
+      when :Identifier
+        AbstractSyntaxTree::Identifier.new(literal: token.literal, offset: token.offset)
       else
         raise UnexpectedTokenError.new("expected expression", token.literal, token.offset)
       end
