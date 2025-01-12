@@ -33,9 +33,12 @@ module Minic
       identifier = scan_identifier
 
       token = @lexer.scan
+      assignment = scan_assignment(token)
+
+      token = @lexer.scan if assignment
       raise UnexpectedTokenError, "expected semicolon, got: #{token.literal}" unless token.token == :SemiColon
 
-      AbstractSyntaxTree::VariableDeclaration.new(type:, identifier:)
+      AbstractSyntaxTree::VariableDeclaration.new(type:, identifier:, assignment:)
     end
 
     sig { returns(AbstractSyntaxTree::Keyword) }
@@ -52,6 +55,24 @@ module Minic
       raise UnexpectedTokenError, "expected identifier, got: #{token.literal}" unless token.token == :Identifier
 
       AbstractSyntaxTree::Identifier.new(literal: token.literal, offset: token.offset)
+    end
+
+    sig { params(token: Lexer::Token).returns(T.nilable(AbstractSyntaxTree::Expression)) }
+    def scan_assignment(token)
+      return unless token.token == :Equal
+
+      scan_expression
+    end
+
+    sig { returns(AbstractSyntaxTree::Expression) }
+    def scan_expression
+      token = @lexer.scan
+      case token.token
+      when :Integer
+        AbstractSyntaxTree::IntegerLiteral.new(literal: token.literal, offset: token.offset)
+      else
+        raise UnexpectedTokenError, "expected expression, got: #{token.literal}"
+      end
     end
   end
 end
