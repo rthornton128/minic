@@ -5,7 +5,6 @@ require "ast"
 
 module Minic
   class Parser
-    class Error < StandardError; end
     class UnexpectedTokenError < Error; end
 
     sig { params(lexer: Lexer).void }
@@ -36,7 +35,11 @@ module Minic
       assignment = scan_assignment(token)
 
       token = @lexer.scan if assignment
-      raise UnexpectedTokenError, "expected semicolon, got: #{token.literal}" unless token.token == :SemiColon
+      raise UnexpectedTokenError.new(
+        "expected semicolon, got: #{token.literal}",
+        token.literal,
+        token.offset,
+      ) unless token.token == :SemiColon
 
       AbstractSyntaxTree::VariableDeclaration.new(type:, identifier:, assignment:)
     end
@@ -44,7 +47,11 @@ module Minic
     sig { returns(AbstractSyntaxTree::Keyword) }
     def scan_keyword
       token = @lexer.scan
-      raise UnexpectedTokenError, "expected type keyword, got: #{token.literal}" unless token.token == :Keyword
+      raise UnexpectedTokenError.new(
+        "expected type keyword",
+        token.literal,
+        token.offset,
+      ) unless token.token == :Keyword
 
       AbstractSyntaxTree::Keyword.new(literal: token.literal, offset: token.offset)
     end
@@ -52,7 +59,11 @@ module Minic
     sig { returns(AbstractSyntaxTree::Identifier) }
     def scan_identifier
       token = @lexer.scan
-      raise UnexpectedTokenError, "expected identifier, got: #{token.literal}" unless token.token == :Identifier
+      raise UnexpectedTokenError.new(
+        "expected identifier",
+        token.literal,
+        token.offset,
+      ) unless token.token == :Identifier
 
       AbstractSyntaxTree::Identifier.new(literal: token.literal, offset: token.offset)
     end
@@ -71,7 +82,7 @@ module Minic
       when :Integer
         AbstractSyntaxTree::IntegerLiteral.new(literal: token.literal, offset: token.offset)
       else
-        raise UnexpectedTokenError, "expected expression, got: #{token.literal}"
+        raise UnexpectedTokenError.new("expected expression", token.literal, token.offset)
       end
     end
   end
