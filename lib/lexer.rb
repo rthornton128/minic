@@ -9,13 +9,16 @@
 require_relative "lexer/error"
 require_relative "lexer/token"
 
+require "fileset"
+
 module Minic
   class Lexer
     DIGIT_NON_ZERO = T.let(("1"..."9").to_a, T::Array[String])
     DIGIT = T.let(("0"..."9").to_a, T::Array[String])
     LETTER = T.let([*"a".."z", *"A".."Z"], T::Array[String])
     ALPHANUMERIC = T.let(LETTER + DIGIT, T::Array[String])
-    KEYWORDS = ["void", "bool", "int", "double", "string", "while", "if", "else", "return", "true", "false"]
+    KEYWORDS = ["void", "bool", "int", "double", "string", "while", "if", "else", "return"]
+    BOOLEANS = ["true", "false"]
     WHITESPACE = [" ", "\t", "\r", "\n"]
     SYMBOLS = T.let(
       {
@@ -42,9 +45,14 @@ module Minic
       T::Hash[String, Symbol],
     )
 
-    sig { params(body: String).void }
-    def initialize(body:)
-      @body = body
+    class InvalidTokenError < Error; end
+    class InvalidIntegerError < Error; end
+    class UnterminatedStringError < Error; end
+
+    sig { params(file: FileSet::File).void }
+    def initialize(file:)
+      @body = T.let(file.body, String)
+      @file = file
       @offset = T.let(0, Integer)
       @reading_offset = T.let(0, Integer)
     end
@@ -58,7 +66,8 @@ module Minic
 
       return scan_identifier if LETTER.include?(literal)
       return scan_numeric if DIGIT.include?(literal)
-      return scan_symbol(literal + current_char) if SYMBOLS.keys.include?(literal + current_char)
+      return scan_string if literal == '"'
+      return scan_comment if literal == "/" && peek == "/"
       return scan_symbol(literal) if SYMBOLS.keys.include?(literal)
 
       raise InvalidTokenError.new("Unexpected token", literal, offset) unless eof?
@@ -66,17 +75,9 @@ module Minic
       Token.new(token: :Eof, literal:, offset:)
     end
 
-    sig { void }
-    def advance
-      return if eof?
-
-      @reading_offset += 1
-    end
-
-    sig { returns(String) }
-    def peek
-      @reading_offset += 1
-      current_char.tap { @reading_offset = @offset }
+    sig { returns(T::Boolean) }
+    def eof?
+      @body.size <= @reading_offset
     end
 
     private
@@ -89,6 +90,13 @@ module Minic
       @offset = @reading_offset
     end
 
+    sig { void }
+    def advance
+      return if eof?
+
+      @reading_offset += 1
+    end
+
     sig { returns(String) }
     def current_char
       return "" if eof?
@@ -96,9 +104,10 @@ module Minic
       T.must(@body[@reading_offset])
     end
 
-    sig { returns(T::Boolean) }
-    def eof?
-      @body.size <= @reading_offset
+    sig { returns(String) }
+    def peek
+      @reading_offset += 1
+      current_char.tap { @reading_offset = @offset }
     end
 
     sig { returns(Token) }
@@ -109,11 +118,10 @@ module Minic
         advance
       end
 
-      if KEYWORDS.include?(literal)
-        Token.new(token: :Keyword, literal:, offset:)
-      else
-        Token.new(token: :Identifier, literal:, offset:)
-      end
+      return Token.new(token: :Keyword, literal:, offset:) if KEYWORDS.include?(literal)
+      return Token.new(token: :Boolean, literal:, offset:) if BOOLEANS.include?(literal)
+
+      Token.new(token: :Identifier, literal:, offset:)
     end
 
     sig { returns(Token) }
@@ -148,8 +156,47 @@ module Minic
       Token.new(token: :Double, literal:, offset:)
     end
 
+    sig { returns(Token) }
+    def scan_string
+      literal = current_char
+      advance
+
+      until current_char == '"' || current_char == "\n" || eof?
+        literal += current_char
+        advance
+      end
+
+      final_quote = current_char
+      raise UnterminatedStringError.new(
+        "string was not terminated by end of line",
+        literal,
+        offset,
+      ) if final_quote != '"'
+
+      literal += final_quote
+      Token.new(token: :String, literal:, offset:)
+    end
+
+    sig { returns(Token) }
+    def scan_comment
+      literal = ""
+      until current_char == "\n" || eof?
+        literal += current_char
+        advance
+      end
+
+      Token.new(token: :Comment, literal:, offset:)
+    end
+
     sig { params(literal: String).returns(Token) }
     def scan_symbol(literal)
+      next_char = peek
+
+      if SYMBOLS.keys.include?(literal + next_char)
+        literal += next_char
+        accept
+      end
+
       Token.new(token: T.must(SYMBOLS[literal]), literal:, offset:).tap { advance }
     end
 
@@ -157,7 +204,10 @@ module Minic
     def skip_whitespace
       return if eof?
 
-      advance while WHITESPACE.include?(current_char)
+      while WHITESPACE.include?(current_char)
+        @file << @reading_offset if current_char == "\n"
+        advance
+      end
     end
   end
 end
