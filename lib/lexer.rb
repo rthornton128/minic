@@ -61,7 +61,6 @@ module Minic
 
       return scan_identifier if LETTER.include?(literal)
       return scan_numeric if DIGIT.include?(literal)
-      return scan_symbol(literal + current_char) if SYMBOLS.keys.include?(literal + current_char)
       return scan_symbol(literal) if SYMBOLS.keys.include?(literal)
 
       raise InvalidTokenError.new("Unexpected token", literal, offset) unless eof?
@@ -69,22 +68,9 @@ module Minic
       Token.new(token: :Eof, literal:, offset:)
     end
 
-    sig { void }
-    def advance
-      return if eof?
-
-      @reading_offset += 1
-    end
-
     sig { returns(T::Boolean) }
     def eof?
       @body.size <= @reading_offset
-    end
-
-    sig { returns(String) }
-    def peek
-      @reading_offset += 1
-      current_char.tap { @reading_offset = @offset }
     end
 
     private
@@ -97,11 +83,24 @@ module Minic
       @offset = @reading_offset
     end
 
+    sig { void }
+    def advance
+      return if eof?
+
+      @reading_offset += 1
+    end
+
     sig { returns(String) }
     def current_char
       return "" if eof?
 
       T.must(@body[@reading_offset])
+    end
+
+    sig { returns(String) }
+    def peek
+      @reading_offset += 1
+      current_char.tap { @reading_offset = @offset }
     end
 
     sig { returns(Token) }
@@ -153,6 +152,13 @@ module Minic
 
     sig { params(literal: String).returns(Token) }
     def scan_symbol(literal)
+      next_char = peek
+
+      if SYMBOLS.keys.include?(literal + next_char)
+        literal += next_char
+        accept
+      end
+
       Token.new(token: T.must(SYMBOLS[literal]), literal:, offset:).tap { advance }
     end
 

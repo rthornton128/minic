@@ -72,11 +72,11 @@ module Minic
     end
 
     test "returns matching symbol for single character operator" do
-      lexer = Lexer.new(file: FileSet::File.new(body: "+"))
+      lexer = Lexer.new(file: FileSet::File.new(body: "="))
       token = lexer.scan
 
-      assert_equal(:Plus, token.token)
-      assert_equal("+", token.literal)
+      assert_equal(:Equal, token.token)
+      assert_equal("=", token.literal)
       assert_equal(0, token.offset)
     end
 
