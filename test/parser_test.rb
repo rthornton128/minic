@@ -61,9 +61,9 @@ module Minic
       program = AbstractSyntaxTree::Program.new
       type = AbstractSyntaxTree::Keyword.new(literal: "bool", offset: 0)
       identifier = AbstractSyntaxTree::Identifier.new(literal: "b", offset: 5)
-      integer = AbstractSyntaxTree::BooleanLiteral.new(literal: "false", offset: 9)
-      var_decl = AbstractSyntaxTree::VariableDeclaration.new(type:, identifier:, assignment: integer)
-      expected = [program, var_decl, type, identifier, integer]
+      boolean = AbstractSyntaxTree::BooleanLiteral.new(literal: "false", offset: 9)
+      var_decl = AbstractSyntaxTree::VariableDeclaration.new(type:, identifier:, assignment: boolean)
+      expected = [program, var_decl, type, identifier, boolean]
 
       ast.walk do |node|
         expect = T.must(expected[index])
@@ -89,9 +89,9 @@ module Minic
       program = AbstractSyntaxTree::Program.new
       type = AbstractSyntaxTree::Keyword.new(literal: "double", offset: 0)
       identifier = AbstractSyntaxTree::Identifier.new(literal: "d", offset: 7)
-      integer = AbstractSyntaxTree::DoubleLiteral.new(literal: "4.2", offset: 11)
-      var_decl = AbstractSyntaxTree::VariableDeclaration.new(type:, identifier:, assignment: integer)
-      expected = [program, var_decl, type, identifier, integer]
+      double = AbstractSyntaxTree::DoubleLiteral.new(literal: "4.2", offset: 11)
+      var_decl = AbstractSyntaxTree::VariableDeclaration.new(type:, identifier:, assignment: double)
+      expected = [program, var_decl, type, identifier, double]
 
       ast.walk do |node|
         expect = T.must(expected[index])
@@ -145,9 +145,9 @@ module Minic
       program = AbstractSyntaxTree::Program.new
       type = AbstractSyntaxTree::Keyword.new(literal: "string", offset: 0)
       identifier = AbstractSyntaxTree::Identifier.new(literal: "s", offset: 7)
-      integer = AbstractSyntaxTree::StringLiteral.new(literal: '"word"', offset: 11)
-      var_decl = AbstractSyntaxTree::VariableDeclaration.new(type:, identifier:, assignment: integer)
-      expected = [program, var_decl, type, identifier, integer]
+      string = AbstractSyntaxTree::StringLiteral.new(literal: '"word"', offset: 11)
+      var_decl = AbstractSyntaxTree::VariableDeclaration.new(type:, identifier:, assignment: string)
+      expected = [program, var_decl, type, identifier, string]
 
       ast.walk do |node|
         expect = T.must(expected[index])
