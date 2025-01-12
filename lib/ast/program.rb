@@ -3,10 +3,6 @@
 
 module Minic
   class AbstractSyntaxTree
-    Declaration = T.type_alias { T.any(FunctionDeclaration, VariableDeclaration) }
-    Literal = T.type_alias { T.any(BooleanLiteral, DoubleLiteral, IntegerLiteral, StringLiteral) }
-    Expression = T.type_alias { Literal }
-
     class Program < Node
       sig { params(literal: String, offset: Integer).void }
       def initialize(literal: "", offset: 0)
