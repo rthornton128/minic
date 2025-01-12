@@ -173,6 +173,7 @@ module Minic
       ) if final_quote != '"'
 
       literal += final_quote
+      advance
       Token.new(token: :String, literal:, offset:)
     end
 
