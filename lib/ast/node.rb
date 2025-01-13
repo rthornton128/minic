@@ -21,7 +21,7 @@ module Minic
         @offset = offset
       end
 
-      sig { abstract.params(block: T.proc.params(node: Node).void).void }
+      sig { params(block: T.proc.params(node: Node).void).void }
       def walk(&block); end
     end
   end
