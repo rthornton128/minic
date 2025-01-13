@@ -31,7 +31,7 @@ module Minic
         "." => :Dot,
         '"' => :DoubleQuote,
         "/" => :ForwardSlash,
-        "!" => :Exclaimation,
+        "!" => :Exclamation,
         "+" => :Plus,
         "*" => :Star,
         "%" => :Percent,
@@ -173,6 +173,7 @@ module Minic
       ) if final_quote != '"'
 
       literal += final_quote
+      advance
       Token.new(token: :String, literal:, offset:)
     end
 

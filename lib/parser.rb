@@ -10,11 +10,22 @@ module Minic
     sig { params(lexer: Lexer).void }
     def initialize(lexer:)
       @lexer = lexer
+      @token = T.let(lexer.scan, Lexer::Token)
     end
 
     sig { returns(AbstractSyntaxTree) }
     def parse
       AbstractSyntaxTree.new(program: parse_program)
+    end
+
+    private
+
+    sig { returns(Lexer::Token) }
+    attr_reader :token
+
+    sig { returns(Lexer::Token) }
+    def next_token
+      @token = @lexer.scan
     end
 
     sig { returns(AbstractSyntaxTree::Program) }
@@ -30,13 +41,10 @@ module Minic
     def scan_declarations
       type = scan_keyword
       identifier = scan_identifier
+      assignment = scan_assignment if token.token == :Equal
 
-      token = @lexer.scan
-      assignment = scan_assignment(token)
-
-      token = @lexer.scan if assignment
       raise UnexpectedTokenError.new(
-        "expected semicolon, got: #{token.literal}",
+        "expected semicolon",
         token.literal,
         token.offset,
       ) unless token.token == :SemiColon
@@ -46,44 +54,89 @@ module Minic
 
     sig { returns(AbstractSyntaxTree::Keyword) }
     def scan_keyword
-      token = @lexer.scan
-      raise UnexpectedTokenError.new(
-        "expected type keyword",
-        token.literal,
-        token.offset,
-      ) unless token.token == :Keyword
+      literal = token.literal
+      offset = token.offset
 
-      AbstractSyntaxTree::Keyword.new(literal: token.literal, offset: token.offset)
+      raise UnexpectedTokenError.new("expected type keyword", literal, offset) unless token.token == :Keyword
+
+      next_token
+      AbstractSyntaxTree::Keyword.new(literal:, offset:)
     end
 
     sig { returns(AbstractSyntaxTree::Identifier) }
     def scan_identifier
-      token = @lexer.scan
-      raise UnexpectedTokenError.new(
-        "expected identifier",
-        token.literal,
-        token.offset,
-      ) unless token.token == :Identifier
+      literal = token.literal
+      offset = token.offset
 
-      AbstractSyntaxTree::Identifier.new(literal: token.literal, offset: token.offset)
+      raise UnexpectedTokenError.new("expected identifier", literal, offset) unless token.token == :Identifier
+
+      next_token
+      AbstractSyntaxTree::Identifier.new(literal:, offset:)
     end
 
-    sig { params(token: Lexer::Token).returns(T.nilable(AbstractSyntaxTree::Expression)) }
-    def scan_assignment(token)
-      return unless token.token == :Equal
+    sig { returns(T.nilable(AbstractSyntaxTree::Expression)) }
+    def scan_assignment
+      next_token
 
       scan_expression
     end
 
     sig { returns(AbstractSyntaxTree::Expression) }
     def scan_expression
-      token = @lexer.scan
-      case token.token
+      return scan_unary if token.token == :Minus || token.token == :Exclamation
+
+      expression = scan_simple
+
+      return scan_binary(lhs: expression) if token.operator?
+
+      expression
+    end
+
+    sig { params(lhs: AbstractSyntaxTree::Expression).returns(AbstractSyntaxTree::BinaryExpression) }
+    def scan_binary(lhs:)
+      literal = token.literal
+      offset = token.offset
+
+      next_token
+
+      rhs = scan_expression
+
+      AbstractSyntaxTree::BinaryExpression.new(literal:, offset:, lhs:, rhs:)
+    end
+
+    sig { returns(AbstractSyntaxTree::SimpleExpression) }
+    def scan_simple
+      literal = token.literal
+      offset = token.offset
+      type = token.token
+
+      next_token
+
+      case type
+      when :Boolean
+        AbstractSyntaxTree::BooleanLiteral.new(literal:, offset:)
+      when :Double
+        AbstractSyntaxTree::DoubleLiteral.new(literal:, offset:)
       when :Integer
-        AbstractSyntaxTree::IntegerLiteral.new(literal: token.literal, offset: token.offset)
+        AbstractSyntaxTree::IntegerLiteral.new(literal:, offset:)
+      when :String
+        AbstractSyntaxTree::StringLiteral.new(literal:, offset:)
+      when :Identifier
+        AbstractSyntaxTree::Identifier.new(literal:, offset:)
       else
-        raise UnexpectedTokenError.new("expected expression", token.literal, token.offset)
+        raise UnexpectedTokenError.new("expected expression", literal, offset)
       end
+    end
+
+    sig { returns(AbstractSyntaxTree::UnaryExpression) }
+    def scan_unary
+      literal = token.literal
+      offset = token.offset
+      next_token
+
+      expression = scan_expression
+
+      AbstractSyntaxTree::UnaryExpression.new(literal:, offset:, expression:)
     end
   end
 end

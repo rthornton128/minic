@@ -140,6 +140,14 @@ module Minic
       end
     end
 
+    test "does not raise an exception for scanning after a string" do
+      lexer = Lexer.new(file: FileSet::File.new(body: '"hello";'))
+      lexer.scan
+      token = lexer.scan
+
+      assert_equal(:SemiColon, token.token)
+    end
+
     test "returns comment for comment literal" do
       lexer = Lexer.new(file: FileSet::File.new(body: "// comment"))
       token = lexer.scan

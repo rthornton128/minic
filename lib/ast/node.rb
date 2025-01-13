@@ -15,13 +15,13 @@ module Minic
       attr_reader :length, :offset
 
       sig { params(literal: String, offset: Integer).void }
-      def initialize(literal:, offset:)
+      def initialize(literal: "", offset: 0)
         @length = T.let(literal.size, Integer)
         @literal = literal
         @offset = offset
       end
 
-      sig { abstract.params(block: T.proc.params(node: Node).void).void }
+      sig { params(block: T.proc.params(node: Node).void).void }
       def walk(&block); end
     end
   end

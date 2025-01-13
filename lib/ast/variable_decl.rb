@@ -16,7 +16,11 @@ module Minic
       def walk(&block)
         yield(@type)
         yield(@identifier)
-        yield(@assignment) if @assignment
+
+        if @assignment
+          yield(@assignment)
+          @assignment.walk(&block)
+        end
       end
     end
   end
