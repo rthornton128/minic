@@ -4,6 +4,8 @@
 module Minic
   class Lexer
     class Token
+      OPERATORS = [:Plus, :Minus, :Star, :FowardSlash, :Exclamation].freeze
+
       sig { returns(Symbol) }
       attr_reader :token
 
@@ -18,6 +20,11 @@ module Minic
         @token = token
         @literal = literal
         @offset = offset
+      end
+
+      sig { returns(T::Boolean) }
+      def operator?
+        OPERATORS.include?(@token)
       end
     end
   end

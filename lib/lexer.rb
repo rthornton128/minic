@@ -31,7 +31,7 @@ module Minic
         "." => :Dot,
         '"' => :DoubleQuote,
         "/" => :ForwardSlash,
-        "!" => :Exclaimation,
+        "!" => :Exclamation,
         "+" => :Plus,
         "*" => :Star,
         "%" => :Percent,

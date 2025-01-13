@@ -15,7 +15,7 @@ module Minic
       attr_reader :length, :offset
 
       sig { params(literal: String, offset: Integer).void }
-      def initialize(literal:, offset:)
+      def initialize(literal: "", offset: 0)
         @length = T.let(literal.size, Integer)
         @literal = literal
         @offset = offset

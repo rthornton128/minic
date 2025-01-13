@@ -189,5 +189,64 @@ module Minic
 
       assert_equal(expected.size, index, "Number of nodes must match")
     end
+
+    test "parse variable declaration with unary expression assignment" do
+      file = FileSet::File.new(body: "int a = !b;")
+      lexer = Lexer.new(file:)
+      parser = Parser.new(lexer:)
+
+      ast = parser.parse
+
+      index = 0
+      program = AbstractSyntaxTree::Program.new
+      type = AbstractSyntaxTree::Keyword.new(literal: "int", offset: 0)
+      identifier = AbstractSyntaxTree::Identifier.new(literal: "a", offset: 4)
+      expression = AbstractSyntaxTree::Identifier.new(literal: "b", offset: 9)
+      unary = AbstractSyntaxTree::UnaryExpression.new(literal: "!", offset: 8, expression:)
+      var_decl = AbstractSyntaxTree::VariableDeclaration.new(type:, identifier:, assignment: unary)
+      expected = [program, var_decl, type, identifier, unary, expression]
+
+      ast.walk do |node|
+        expect = T.must(expected[index])
+
+        assert_instance_of(expect.class, node)
+        assert_equal(expect.literal, node.literal)
+        assert_equal(expect.offset, node.offset)
+        assert_equal(expect.length, node.length)
+        index += 1
+      end
+
+      assert_equal(expected.size, index, "Number of nodes must match")
+    end
+
+    test "parse variable declaration with binary expression assignment" do
+      file = FileSet::File.new(body: "int a = 1 + 2;")
+      lexer = Lexer.new(file:)
+      parser = Parser.new(lexer:)
+
+      ast = parser.parse
+
+      program = AbstractSyntaxTree::Program.new
+      type = AbstractSyntaxTree::Keyword.new(literal: "int", offset: 0)
+      identifier = AbstractSyntaxTree::Identifier.new(literal: "a", offset: 4)
+      lhs = AbstractSyntaxTree::IntegerLiteral.new(literal: "1", offset: 8)
+      rhs = AbstractSyntaxTree::IntegerLiteral.new(literal: "2", offset: 12)
+      binary = AbstractSyntaxTree::BinaryExpression.new(literal: "+", offset: 10, lhs:, rhs:)
+      var_decl = AbstractSyntaxTree::VariableDeclaration.new(type:, identifier:, assignment: binary)
+      expected = [program, var_decl, type, identifier, binary, lhs, rhs]
+
+      index = 0
+      ast.walk do |node|
+        expect = T.must(expected[index])
+
+        assert_instance_of(expect.class, node)
+        assert_equal(expect.literal, node.literal)
+        assert_equal(expect.offset, node.offset)
+        assert_equal(expect.length, node.length)
+        index += 1
+      end
+
+      assert_equal(expected.size, index, "Number of nodes must match")
+    end
   end
 end

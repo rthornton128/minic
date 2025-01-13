@@ -8,6 +8,8 @@ require_relative "ast/double_literal"
 require_relative "ast/integer_literal"
 require_relative "ast/string_literal"
 require_relative "ast/keyword"
+require_relative "ast/binary_expression"
+require_relative "ast/unary_expression"
 require_relative "ast/function_decl"
 require_relative "ast/variable_decl"
 require_relative "ast/program"
@@ -16,7 +18,8 @@ module Minic
   class AbstractSyntaxTree
     Declaration = T.type_alias { T.any(FunctionDeclaration, VariableDeclaration) }
     Literal = T.type_alias { T.any(BooleanLiteral, DoubleLiteral, IntegerLiteral, StringLiteral) }
-    Expression = T.type_alias { T.any(Literal, Identifier) }
+    SimpleExpression = T.type_alias { T.any(Literal, Identifier) }
+    Expression = T.type_alias { T.any(SimpleExpression, BinaryExpression, UnaryExpression) }
 
     sig { returns(Program) }
     attr_accessor :program
