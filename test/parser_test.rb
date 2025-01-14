@@ -248,5 +248,34 @@ module Minic
 
       assert_equal(expected.size, index, "Number of nodes must match")
     end
+
+    test "parse function declaration with empty parameters and empty block" do
+      file = FileSet::File.new(body: "int main() {}")
+      lexer = Lexer.new(file:)
+      parser = Parser.new(lexer:)
+
+      ast = parser.parse
+
+      program = AbstractSyntaxTree::Program.new
+      type = AbstractSyntaxTree::Keyword.new(literal: "int", offset: 0)
+      identifier = AbstractSyntaxTree::Identifier.new(literal: "main", offset: 4)
+      parameter_list = AbstractSyntaxTree::ParameterList.new(opening: 8, closing: 9, parameters: [])
+      block = AbstractSyntaxTree::Block.new(opening: 11, closing: 12, statements: [])
+      func_decl = AbstractSyntaxTree::FunctionDeclaration.new(type:, identifier:, parameter_list:, block:)
+      expected = [program, func_decl, type, identifier, parameter_list, block]
+
+      index = 0
+      ast.walk do |node|
+        expect = T.must(expected[index])
+
+        assert_instance_of(expect.class, node)
+        assert_equal(expect.literal, node.literal)
+        assert_equal(expect.offset, node.offset)
+        assert_equal(expect.length, node.length)
+        index += 1
+      end
+
+      assert_equal(expected.size, index, "Number of nodes must match")
+    end
   end
 end

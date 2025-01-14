@@ -43,6 +43,8 @@ module Minic
       identifier = scan_identifier
       assignment = scan_assignment if token.token == :Equal
 
+      return scan_function_decl(type, identifier) if token.token == :LeftParen
+
       raise UnexpectedTokenError.new(
         "expected semicolon",
         token.literal,
@@ -137,6 +139,47 @@ module Minic
       expression = scan_expression
 
       AbstractSyntaxTree::UnaryExpression.new(literal:, offset:, expression:)
+    end
+
+    sig do
+      params(
+        type: AbstractSyntaxTree::Keyword,
+        identifier: AbstractSyntaxTree::Identifier,
+      ).returns(AbstractSyntaxTree::FunctionDeclaration)
+    end
+    def scan_function_decl(type, identifier)
+      parameter_list = scan_parameter_list
+      block = scan_block
+
+      AbstractSyntaxTree::FunctionDeclaration.new(type:, identifier:, parameter_list:, block:)
+    end
+
+    sig { returns(AbstractSyntaxTree::ParameterList) }
+    def scan_parameter_list
+      opening = token.offset
+      next_token
+
+      parameters = []
+      # parameters << scan_parameter until token.token == :RightParen || eof?
+
+      closing = token.offset
+      next_token
+
+      AbstractSyntaxTree::ParameterList.new(opening:, closing:, parameters:)
+    end
+
+    sig { returns(AbstractSyntaxTree::Block) }
+    def scan_block
+      opening = token.offset
+      next_token
+
+      statements = []
+      # statements << scan_statement until token.token == :RightBrace
+
+      closing = token.offset
+      next_token
+
+      AbstractSyntaxTree::Block.new(opening:, closing:, statements:)
     end
   end
 end
