@@ -342,6 +342,97 @@ module Minic
       assert_equal(expected.size, index, "Number of nodes must match")
     end
 
+    test "parse function declaration with if statement in block" do
+      file = FileSet::File.new(body: "int main() { if(true) {}; }")
+      lexer = Lexer.new(file:)
+      parser = Parser.new(lexer:)
+
+      ast = parser.parse
+
+      conditional = AbstractSyntaxTree::BooleanLiteral.new(literal: "true", offset: 16)
+      then_block = AbstractSyntaxTree::Block.new(opening: 22, closing: 23, statements: [])
+      if_statement = AbstractSyntaxTree::IfStatement.new(offset: 13, conditional:, then_block:)
+
+      expected = [if_statement, conditional, then_block]
+
+      list = find_node(klass: AbstractSyntaxTree::Block, ast:)
+      refute_nil(list)
+
+      index = 0
+      T.must(list).walk do |node|
+        expect = T.must(expected[index])
+
+        assert_instance_of(expect.class, node)
+        assert_equal(expect.literal, node.literal)
+        assert_equal(expect.offset, node.offset)
+        assert_equal(expect.length, node.length)
+        index += 1
+      end
+
+      assert_equal(expected.size, index, "Number of nodes must match")
+    end
+
+    test "parse function declaration with if statement with else clause in block" do
+      file = FileSet::File.new(body: "int main() { if(true) {} else {}; }")
+      lexer = Lexer.new(file:)
+      parser = Parser.new(lexer:)
+
+      ast = parser.parse
+
+      conditional = AbstractSyntaxTree::BooleanLiteral.new(literal: "true", offset: 16)
+      then_block = AbstractSyntaxTree::Block.new(opening: 22, closing: 23, statements: [])
+      else_block = AbstractSyntaxTree::Block.new(opening: 30, closing: 31, statements: [])
+      if_statement = AbstractSyntaxTree::IfStatement.new(offset: 13, conditional:, then_block:, else_block:)
+
+      expected = [if_statement, conditional, then_block, else_block]
+
+      list = find_node(klass: AbstractSyntaxTree::Block, ast:)
+      refute_nil(list)
+
+      index = 0
+      T.must(list).walk do |node|
+        expect = T.must(expected[index])
+
+        assert_instance_of(expect.class, node)
+        assert_equal(expect.literal, node.literal)
+        assert_equal(expect.offset, node.offset)
+        assert_equal(expect.length, node.length)
+        index += 1
+      end
+
+      assert_equal(expected.size, index, "Number of nodes must match")
+    end
+
+    test "parse function declaration with while statement in block" do
+      file = FileSet::File.new(body: "int main() { while(true) {}; }")
+      lexer = Lexer.new(file:)
+      parser = Parser.new(lexer:)
+
+      ast = parser.parse
+
+      conditional = AbstractSyntaxTree::BooleanLiteral.new(literal: "true", offset: 19)
+      block = AbstractSyntaxTree::Block.new(opening: 25, closing: 26, statements: [])
+      where = AbstractSyntaxTree::WhileStatement.new(offset: 13, conditional:, block:)
+
+      expected = [where, conditional, block]
+
+      list = find_node(klass: AbstractSyntaxTree::Block, ast:)
+      refute_nil(list)
+
+      index = 0
+      T.must(list).walk do |node|
+        expect = T.must(expected[index])
+
+        assert_instance_of(expect.class, node)
+        assert_equal(expect.literal, node.literal)
+        assert_equal(expect.offset, node.offset)
+        assert_equal(expect.length, node.length)
+        index += 1
+      end
+
+      assert_equal(expected.size, index, "Number of nodes must match")
+    end
+
     private
 
     sig do
@@ -352,7 +443,12 @@ module Minic
     end
     def find_node(klass:, ast:)
       node = T.let(nil, T.nilable(AbstractSyntaxTree::Node))
-      ast.walk { |n| node = n if n.instance_of?(klass) }
+      ast.walk do |n|
+        if n.instance_of?(klass)
+          node = n
+          break
+        end
+      end
       node
     end
   end

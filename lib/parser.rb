@@ -191,12 +191,80 @@ module Minic
       next_token
 
       statements = []
-      # statements << scan_statement until token.token == :RightBrace
+      until token.token == :RightBrace || @lexer.eof?
+        statements << scan_statement
+
+        raise UnexpectedTokenError.new(
+          "statement must be terminated with a semicolon",
+          token.literal,
+          token.offset,
+        ) unless token.token == :SemiColon
+
+        next_token
+      end
 
       closing = token.offset
       next_token
 
       AbstractSyntaxTree::Block.new(opening:, closing:, statements:)
+    end
+
+    sig { returns(AbstractSyntaxTree::Statement) }
+    def scan_statement
+      return scan_while if token.literal == "while"
+      return scan_if if token.literal == "if"
+
+      raise UnexpectedTokenError.new("expected statement", token.literal, token.offset)
+    end
+
+    sig { returns(AbstractSyntaxTree::IfStatement) }
+    def scan_if
+      offset = token.offset
+      next_token
+
+      conditional = scan_conditional
+      then_block = scan_block
+
+      if token.literal == "else"
+        next_token
+        else_block = scan_block
+      end
+
+      AbstractSyntaxTree::IfStatement.new(offset:, conditional:, then_block:, else_block:)
+    end
+
+    sig { returns(AbstractSyntaxTree::WhileStatement) }
+    def scan_while
+      offset = token.offset
+      next_token
+
+      conditional = scan_conditional
+      block = scan_block
+
+      AbstractSyntaxTree::WhileStatement.new(offset:, conditional:, block:)
+    end
+
+    sig { returns(AbstractSyntaxTree::Expression) }
+    def scan_conditional
+      raise UnexpectedTokenError.new(
+        "expected opening parenthesis",
+        token.literal,
+        token.offset,
+      ) unless token.token == :LeftParen
+
+      next_token
+
+      expression = scan_expression
+
+      raise UnexpectedTokenError.new(
+        "expected closing parenthesis",
+        token.literal,
+        token.offset,
+      ) unless token.token == :RightParen
+
+      next_token
+
+      expression
     end
   end
 end
