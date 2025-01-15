@@ -248,5 +248,112 @@ module Minic
 
       assert_equal(expected.size, index, "Number of nodes must match")
     end
+
+    test "parse function declaration with empty parameters and empty block" do
+      file = FileSet::File.new(body: "int main() {}")
+      lexer = Lexer.new(file:)
+      parser = Parser.new(lexer:)
+
+      ast = parser.parse
+
+      program = AbstractSyntaxTree::Program.new
+      type = AbstractSyntaxTree::Keyword.new(literal: "int", offset: 0)
+      identifier = AbstractSyntaxTree::Identifier.new(literal: "main", offset: 4)
+      parameter_list = AbstractSyntaxTree::ParameterList.new(opening: 8, closing: 9, parameters: [])
+      block = AbstractSyntaxTree::Block.new(opening: 11, closing: 12, statements: [])
+      func_decl = AbstractSyntaxTree::FunctionDeclaration.new(type:, identifier:, parameter_list:, block:)
+      expected = [program, func_decl, type, identifier, parameter_list, block]
+
+      index = 0
+      ast.walk do |node|
+        expect = T.must(expected[index])
+
+        assert_instance_of(expect.class, node)
+        assert_equal(expect.literal, node.literal)
+        assert_equal(expect.offset, node.offset)
+        assert_equal(expect.length, node.length)
+        index += 1
+      end
+
+      assert_equal(expected.size, index, "Number of nodes must match")
+    end
+
+    test "parse function declaration with a single parameter" do
+      file = FileSet::File.new(body: "int main(bool b) {}")
+      lexer = Lexer.new(file:)
+      parser = Parser.new(lexer:)
+
+      ast = parser.parse
+
+      type = AbstractSyntaxTree::Keyword.new(literal: "bool", offset: 9)
+      identifier = AbstractSyntaxTree::Identifier.new(literal: "b", offset: 14)
+      parameter = AbstractSyntaxTree::Parameter.new(type:, identifier:)
+
+      expected = [parameter, type, identifier]
+
+      list = find_node(klass: AbstractSyntaxTree::ParameterList, ast:)
+      refute_nil(list)
+
+      index = 0
+      T.must(list).walk do |node|
+        expect = T.must(expected[index])
+
+        assert_instance_of(expect.class, node)
+        assert_equal(expect.literal, node.literal)
+        assert_equal(expect.offset, node.offset)
+        assert_equal(expect.length, node.length)
+        index += 1
+      end
+
+      assert_equal(expected.size, index, "Number of nodes must match")
+    end
+
+    test "parse function declaration with multiple parameters" do
+      file = FileSet::File.new(body: "int add(int a, int b) {}")
+      lexer = Lexer.new(file:)
+      parser = Parser.new(lexer:)
+
+      ast = parser.parse
+
+      first_type = AbstractSyntaxTree::Keyword.new(literal: "int", offset: 8)
+      first_identifier = AbstractSyntaxTree::Identifier.new(literal: "a", offset: 12)
+      first_parameter = AbstractSyntaxTree::Parameter.new(type: first_type, identifier: first_identifier)
+
+      second_type = AbstractSyntaxTree::Keyword.new(literal: "int", offset: 15)
+      second_identifier = AbstractSyntaxTree::Identifier.new(literal: "b", offset: 19)
+      second_parameter = AbstractSyntaxTree::Parameter.new(type: second_type, identifier: second_identifier)
+
+      expected = [first_parameter, first_type, first_identifier, second_parameter, second_type, second_identifier]
+
+      list = find_node(klass: AbstractSyntaxTree::ParameterList, ast:)
+      refute_nil(list)
+
+      index = 0
+      T.must(list).walk do |node|
+        expect = T.must(expected[index])
+
+        assert_instance_of(expect.class, node)
+        assert_equal(expect.literal, node.literal)
+        assert_equal(expect.offset, node.offset)
+        assert_equal(expect.length, node.length)
+        index += 1
+      end
+
+      assert_equal(expected.size, index, "Number of nodes must match")
+    end
+
+    private
+
+    sig do
+      params(
+        klass: T.class_of(AbstractSyntaxTree::Node),
+        ast: AbstractSyntaxTree,
+      ).returns(T.nilable(AbstractSyntaxTree::Node))
+    end
+    def find_node(klass:, ast:)
+      node = T.let(nil, T.nilable(AbstractSyntaxTree::Node))
+      ast.walk { |n| node = n if n.instance_of?(klass) }
+      node
+    end
   end
 end
