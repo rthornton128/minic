@@ -8,9 +8,13 @@ require_relative "ast/integer_literal"
 require_relative "ast/string_literal"
 require_relative "ast/identifier"
 require_relative "ast/keyword"
+require_relative "ast/function_call"
 require_relative "ast/binary_expression"
+require_relative "ast/sub_expression"
 require_relative "ast/unary_expression"
-require_relative "ast/statement"
+require_relative "ast/assignment_statement"
+require_relative "ast/if_statement"
+require_relative "ast/while_statement"
 require_relative "ast/block"
 require_relative "ast/parameter"
 require_relative "ast/parameter_list"
@@ -23,7 +27,10 @@ module Minic
     Declaration = T.type_alias { T.any(FunctionDeclaration, VariableDeclaration) }
     Literal = T.type_alias { T.any(BooleanLiteral, DoubleLiteral, IntegerLiteral, StringLiteral) }
     SimpleExpression = T.type_alias { T.any(Literal, Identifier) }
-    Expression = T.type_alias { T.any(SimpleExpression, BinaryExpression, UnaryExpression) }
+    Expression = T.type_alias do
+      T.any(SimpleExpression, BinaryExpression, SubExpression, UnaryExpression, FunctionCall)
+    end
+    Statement = T.type_alias { T.any(AssignmentStatement, IfStatement, WhileStatement, FunctionCall) }
 
     sig { returns(Program) }
     attr_accessor :program
