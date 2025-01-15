@@ -20,7 +20,10 @@ module Minic
 
       sig { params(block: T.proc.params(node: Node).void).void }
       def walk(&block)
-        @parameters.each { yield(_1) }
+        @parameters.each do |parameter|
+          yield(parameter)
+          parameter.walk(&block)
+        end
       end
     end
   end

@@ -160,12 +160,29 @@ module Minic
       next_token
 
       parameters = []
-      # parameters << scan_parameter until token.token == :RightParen || eof?
+      until token.token == :RightParen || @lexer.eof?
+        parameters << scan_parameter
+        next_token if token.token == :Comma
+      end
+
+      raise UnexpectedTokenError.new(
+        "expected closing parenthesis",
+        token.literal,
+        token.offset,
+      ) unless token.token == :RightParen
 
       closing = token.offset
       next_token
 
       AbstractSyntaxTree::ParameterList.new(opening:, closing:, parameters:)
+    end
+
+    sig { returns(AbstractSyntaxTree::Parameter) }
+    def scan_parameter
+      type = scan_keyword
+      identifier = scan_identifier
+
+      AbstractSyntaxTree::Parameter.new(type:, identifier:)
     end
 
     sig { returns(AbstractSyntaxTree::Block) }
