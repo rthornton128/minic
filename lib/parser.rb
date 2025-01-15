@@ -233,8 +233,28 @@ module Minic
     def scan_statement
       return scan_while if token.literal == "while"
       return scan_if if token.literal == "if"
+      return scan_assignment_statement if token.token == :Identifier
 
       raise UnexpectedTokenError.new("expected statement", token.literal, token.offset)
+    end
+
+    sig { returns(AbstractSyntaxTree::AssignmentStatement) }
+    def scan_assignment_statement
+      lhs = scan_identifier
+
+      raise UnexpectedTokenError.new(
+        "statement must be terminated with a semicolon",
+        token.literal,
+        token.offset,
+      ) unless token.token == :Equal
+
+      literal = token.literal
+      offset = token.offset
+      next_token
+
+      rhs = scan_expression
+
+      AbstractSyntaxTree::AssignmentStatement.new(literal:, offset:, lhs:, rhs:)
     end
 
     sig { returns(AbstractSyntaxTree::IfStatement) }

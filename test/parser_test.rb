@@ -399,6 +399,36 @@ module Minic
       assert_equal(expected.size, index, "Number of nodes must match")
     end
 
+    test "parse function declaration with assignment statement in block" do
+      file = FileSet::File.new(body: "int main() { a = b; }")
+      lexer = Lexer.new(file:)
+      parser = Parser.new(lexer:)
+
+      ast = parser.parse
+
+      lhs = AbstractSyntaxTree::Identifier.new(literal: "a", offset: 13)
+      rhs = AbstractSyntaxTree::Identifier.new(literal: "b", offset: 17)
+      assignment = AbstractSyntaxTree::AssignmentStatement.new(literal: "=", offset: 15, lhs:, rhs:)
+
+      expected = [assignment, lhs, rhs]
+
+      ast = find_node(klass: AbstractSyntaxTree::Block, ast:)
+      refute_nil(ast)
+
+      index = 0
+      T.must(ast).walk do |node|
+        expect = T.must(expected[index])
+
+        assert_instance_of(expect.class, node)
+        assert_equal(expect.literal, node.literal)
+        assert_equal(expect.offset, node.offset)
+        assert_equal(expect.length, node.length)
+        index += 1
+      end
+
+      assert_equal(expected.size, index, "Number of nodes must match")
+    end
+
     test "parse function declaration with if statement with else clause in block" do
       file = FileSet::File.new(body: "int main() { if(true) {} else {}; }")
       lexer = Lexer.new(file:)
