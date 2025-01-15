@@ -276,6 +276,34 @@ module Minic
       assert_equal(expected.size, index, "Number of nodes must match")
     end
 
+    test "parse variable declaration with simple function call" do
+      file = FileSet::File.new(body: "int a = func();")
+      lexer = Lexer.new(file:)
+      parser = Parser.new(lexer:)
+
+      ast = parser.parse
+
+      identifier = AbstractSyntaxTree::Identifier.new(literal: "func", offset: 8)
+
+      expected = [identifier]
+
+      ast = find_node(klass: AbstractSyntaxTree::FunctionCall, ast:)
+      refute_nil(ast)
+
+      index = 0
+      T.must(ast).walk do |node|
+        expect = T.must(expected[index])
+
+        assert_instance_of(expect.class, node)
+        assert_equal(expect.literal, node.literal)
+        assert_equal(expect.offset, node.offset)
+        assert_equal(expect.length, node.length)
+        index += 1
+      end
+
+      assert_equal(expected.size, index, "Number of nodes must match")
+    end
+
     test "parse function declaration with empty parameters and empty block" do
       file = FileSet::File.new(body: "int main() {}")
       lexer = Lexer.new(file:)
@@ -357,6 +385,96 @@ module Minic
 
       index = 0
       T.must(list).walk do |node|
+        expect = T.must(expected[index])
+
+        assert_instance_of(expect.class, node)
+        assert_equal(expect.literal, node.literal)
+        assert_equal(expect.offset, node.offset)
+        assert_equal(expect.length, node.length)
+        index += 1
+      end
+
+      assert_equal(expected.size, index, "Number of nodes must match")
+    end
+
+    test "parse function declaration with function call with no parameters in block" do
+      file = FileSet::File.new(body: "int main() { add(); }")
+      lexer = Lexer.new(file:)
+      parser = Parser.new(lexer:)
+
+      ast = parser.parse
+
+      identifier = AbstractSyntaxTree::Identifier.new(literal: "add", offset: 13)
+      function_call = AbstractSyntaxTree::FunctionCall.new(identifier:, arguments: [])
+
+      expected = [function_call, identifier]
+
+      ast = find_node(klass: AbstractSyntaxTree::Block, ast:)
+      refute_nil(ast)
+
+      index = 0
+      T.must(ast).walk do |node|
+        expect = T.must(expected[index])
+
+        assert_instance_of(expect.class, node)
+        assert_equal(expect.literal, node.literal)
+        assert_equal(expect.offset, node.offset)
+        assert_equal(expect.length, node.length)
+        index += 1
+      end
+
+      assert_equal(expected.size, index, "Number of nodes must match")
+    end
+
+    test "parse function declaration with function call with one parameter in block" do
+      file = FileSet::File.new(body: "int main() { func(true); }")
+      lexer = Lexer.new(file:)
+      parser = Parser.new(lexer:)
+
+      ast = parser.parse
+
+      identifier = AbstractSyntaxTree::Identifier.new(literal: "func", offset: 13)
+      argument = AbstractSyntaxTree::BooleanLiteral.new(literal: "true", offset: 18)
+      function_call = AbstractSyntaxTree::FunctionCall.new(identifier:, arguments: [argument])
+
+      expected = [function_call, identifier, argument]
+
+      ast = find_node(klass: AbstractSyntaxTree::Block, ast:)
+      refute_nil(ast)
+
+      index = 0
+      T.must(ast).walk do |node|
+        expect = T.must(expected[index])
+
+        assert_instance_of(expect.class, node)
+        assert_equal(expect.literal, node.literal)
+        assert_equal(expect.offset, node.offset)
+        assert_equal(expect.length, node.length)
+        index += 1
+      end
+
+      assert_equal(expected.size, index, "Number of nodes must match")
+    end
+
+    test "parse function declaration with function call with multiple parameters in block" do
+      file = FileSet::File.new(body: "int main() { add(1, 2); }")
+      lexer = Lexer.new(file:)
+      parser = Parser.new(lexer:)
+
+      ast = parser.parse
+
+      identifier = AbstractSyntaxTree::Identifier.new(literal: "add", offset: 13)
+      first_argument = AbstractSyntaxTree::IntegerLiteral.new(literal: "1", offset: 17)
+      second_argument = AbstractSyntaxTree::IntegerLiteral.new(literal: "2", offset: 20)
+      function_call = AbstractSyntaxTree::FunctionCall.new(identifier:, arguments: [first_argument, second_argument])
+
+      expected = [function_call, identifier, first_argument, second_argument]
+
+      ast = find_node(klass: AbstractSyntaxTree::Block, ast:)
+      refute_nil(ast)
+
+      index = 0
+      T.must(ast).walk do |node|
         expect = T.must(expected[index])
 
         assert_instance_of(expect.class, node)

@@ -92,6 +92,11 @@ module Minic
 
       return scan_binary(lhs: expression) if token.operator?
 
+      return scan_function_call(T.cast(
+        expression,
+        AbstractSyntaxTree::Identifier,
+      )) if token.token == :LeftParen && expression.is_a?(AbstractSyntaxTree::Identifier)
+
       expression
     end
 
@@ -129,6 +134,38 @@ module Minic
       else
         raise UnexpectedTokenError.new("expected expression", literal, offset)
       end
+    end
+
+    sig { params(identifier: AbstractSyntaxTree::Identifier).returns(AbstractSyntaxTree::FunctionCall) }
+    def scan_function_call(identifier)
+      arguments = scan_argument_list
+
+      AbstractSyntaxTree::FunctionCall.new(identifier:, arguments:)
+    end
+
+    sig { returns(T::Array[AbstractSyntaxTree::Expression]) }
+    def scan_argument_list
+      raise UnexpectedTokenError.new(
+        "expected closing parenthesis",
+        token.literal,
+        token.offset,
+      ) unless token.token == :LeftParen
+      next_token
+
+      arguments = []
+      until token.token == :RightParen || @lexer.eof?
+        arguments << scan_expression
+        next_token if token.token == :Comma
+      end
+
+      raise UnexpectedTokenError.new(
+        "expected closing parenthesis",
+        token.literal,
+        token.offset,
+      ) unless token.token == :RightParen
+      next_token
+
+      arguments
     end
 
     sig { returns(AbstractSyntaxTree::SubExpression) }
@@ -233,15 +270,20 @@ module Minic
     def scan_statement
       return scan_while if token.literal == "while"
       return scan_if if token.literal == "if"
-      return scan_assignment_statement if token.token == :Identifier
+
+      if token.token == :Identifier
+        identifier = scan_identifier
+        return scan_assignment_statement(identifier) if token.token == :Equal
+        return scan_function_call(identifier) if token.token == :LeftParen
+
+        raise UnexpectedTokenError.new("unexpected token", token.literal, token.offset)
+      end
 
       raise UnexpectedTokenError.new("expected statement", token.literal, token.offset)
     end
 
-    sig { returns(AbstractSyntaxTree::AssignmentStatement) }
-    def scan_assignment_statement
-      lhs = scan_identifier
-
+    sig { params(lhs: AbstractSyntaxTree::Identifier).returns(AbstractSyntaxTree::AssignmentStatement) }
+    def scan_assignment_statement(lhs)
       raise UnexpectedTokenError.new(
         "statement must be terminated with a semicolon",
         token.literal,
