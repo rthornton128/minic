@@ -219,6 +219,33 @@ module Minic
       assert_equal(expected.size, index, "Number of nodes must match")
     end
 
+    test "parse variable declaration with sub expression assignment" do
+      file = FileSet::File.new(body: "int a = (true);")
+      lexer = Lexer.new(file:)
+      parser = Parser.new(lexer:)
+
+      ast = parser.parse
+
+      bool_expr = AbstractSyntaxTree::BooleanLiteral.new(literal: "true", offset: 9)
+      expected = [bool_expr]
+
+      ast = find_node(klass: AbstractSyntaxTree::SubExpression, ast:)
+      refute_nil(ast)
+
+      index = 0
+      T.must(ast).walk do |node|
+        expect = T.must(expected[index])
+
+        assert_instance_of(expect.class, node)
+        assert_equal(expect.literal, node.literal)
+        assert_equal(expect.offset, node.offset)
+        assert_equal(expect.length, node.length)
+        index += 1
+      end
+
+      assert_equal(expected.size, index, "Number of nodes must match")
+    end
+
     test "parse variable declaration with binary expression assignment" do
       file = FileSet::File.new(body: "int a = 1 + 2;")
       lexer = Lexer.new(file:)

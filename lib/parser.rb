@@ -86,6 +86,7 @@ module Minic
     sig { returns(AbstractSyntaxTree::Expression) }
     def scan_expression
       return scan_unary if token.token == :Minus || token.token == :Exclamation
+      return scan_sub if token.token == :LeftParen
 
       expression = scan_simple
 
@@ -128,6 +129,25 @@ module Minic
       else
         raise UnexpectedTokenError.new("expected expression", literal, offset)
       end
+    end
+
+    sig { returns(AbstractSyntaxTree::SubExpression) }
+    def scan_sub
+      opening = token.offset
+      next_token
+
+      expression = scan_expression
+
+      raise UnexpectedTokenError.new(
+        "expected closing parenthesis",
+        token.literal,
+        token.offset,
+      ) unless token.token == :RightParen
+
+      closing = token.offset
+      next_token
+
+      AbstractSyntaxTree::SubExpression.new(opening:, closing:, expression:)
     end
 
     sig { returns(AbstractSyntaxTree::UnaryExpression) }
