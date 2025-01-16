@@ -14,6 +14,7 @@ require_relative "ast/sub_expression"
 require_relative "ast/unary_expression"
 require_relative "ast/assignment_statement"
 require_relative "ast/if_statement"
+require_relative "ast/return_statement"
 require_relative "ast/while_statement"
 require_relative "ast/block"
 require_relative "ast/parameter"
@@ -30,7 +31,7 @@ module Minic
     Expression = T.type_alias do
       T.any(SimpleExpression, BinaryExpression, SubExpression, UnaryExpression, FunctionCall)
     end
-    Statement = T.type_alias { T.any(AssignmentStatement, IfStatement, WhileStatement, FunctionCall) }
+    Statement = T.type_alias { T.any(AssignmentStatement, IfStatement, ReturnStatement, WhileStatement, FunctionCall) }
 
     sig { returns(Program) }
     attr_accessor :program
