@@ -23,6 +23,11 @@ module Minic
     sig { returns(Lexer::Token) }
     attr_reader :token
 
+    sig { params(types: Symbol).returns(T::Boolean) }
+    def any?(*types)
+      types.any? { |type| token.token == type }
+    end
+
     sig { params(type: Symbol, literal: String).returns(Integer) }
     def expect(type, literal = "")
       name = literal.empty? ? type.to_s.downcase : literal
@@ -53,9 +58,9 @@ module Minic
     def parse_declarations
       type = parse_keyword
       identifier = parse_identifier
-      assignment = parse_assignment if token.token == :Equal
+      assignment = parse_assignment if any?(:Equal)
 
-      return parse_function_decl(type, identifier) if token.token == :LeftParen
+      return parse_function_decl(type, identifier) if any?(:LeftParen)
 
       expect(:SemiColon)
 
@@ -91,8 +96,8 @@ module Minic
 
     sig { returns(AbstractSyntaxTree::Expression) }
     def parse_expression
-      return parse_unary if token.token == :Minus || token.token == :Exclamation
-      return parse_sub if token.token == :LeftParen
+      return parse_unary if any?(:Minus, :Exclamation)
+      return parse_sub if any?(:LeftParen)
 
       expression = parse_simple
 
@@ -101,7 +106,7 @@ module Minic
       return parse_function_call(T.cast(
         expression,
         AbstractSyntaxTree::Identifier,
-      )) if token.token == :LeftParen && expression.is_a?(AbstractSyntaxTree::Identifier)
+      )) if any?(:LeftParen) && expression.is_a?(AbstractSyntaxTree::Identifier)
 
       expression
     end
@@ -154,9 +159,9 @@ module Minic
       expect(:LeftParen)
 
       arguments = []
-      until token.token == :RightParen || @lexer.eof?
+      until any?(:RightParen) || @lexer.eof?
         arguments << parse_expression
-        next_token if token.token == :Comma
+        next_token if any?(:Comma)
       end
 
       expect(:RightParen)
@@ -204,9 +209,9 @@ module Minic
       opening = expect(:LeftParen)
 
       parameters = []
-      until token.token == :RightParen || @lexer.eof?
+      until any?(:RightParen) || @lexer.eof?
         parameters << parse_parameter
-        next_token if token.token == :Comma
+        next_token if any?(:Comma)
       end
 
       closing = expect(:RightParen)
@@ -227,7 +232,7 @@ module Minic
       opening = expect(:LeftBrace)
 
       statements = []
-      until token.token == :RightBrace || @lexer.eof?
+      until any?(:RightBrace) || @lexer.eof?
         statements << parse_statement
         expect(:SemiColon)
       end
@@ -244,8 +249,8 @@ module Minic
 
       if token.token == :Identifier
         identifier = parse_identifier
-        return parse_assignment_statement(identifier) if token.token == :Equal
-        return parse_function_call(identifier) if token.token == :LeftParen
+        return parse_assignment_statement(identifier) if any?(:Equal)
+        return parse_function_call(identifier) if any?(:LeftParen)
 
         raise UnexpectedTokenError.new("unexpected token", token.literal, token.offset)
       end
