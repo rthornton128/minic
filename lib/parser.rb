@@ -23,6 +23,18 @@ module Minic
     sig { returns(Lexer::Token) }
     attr_reader :token
 
+    sig { params(type: Symbol, literal: String).returns(Integer) }
+    def expect(type, literal = "")
+      name = literal.empty? ? type.to_s.downcase : literal
+      raise UnexpectedTokenError.new(
+        "expected #{name}",
+        token.literal,
+        token.offset,
+      ) unless token.token == type || token.literal == literal
+
+      token.offset.tap { next_token }
+    end
+
     sig { returns(Lexer::Token) }
     def next_token
       @token = @lexer.scan
@@ -45,11 +57,7 @@ module Minic
 
       return parse_function_decl(type, identifier) if token.token == :LeftParen
 
-      raise UnexpectedTokenError.new(
-        "expected semicolon",
-        token.literal,
-        token.offset,
-      ) unless token.token == :SemiColon
+      expect(:SemiColon)
 
       AbstractSyntaxTree::VariableDeclaration.new(type:, identifier:, assignment:)
     end
@@ -59,9 +67,8 @@ module Minic
       literal = token.literal
       offset = token.offset
 
-      raise UnexpectedTokenError.new("expected type keyword", literal, offset) unless token.token == :Keyword
+      expect(:Keyword)
 
-      next_token
       AbstractSyntaxTree::Keyword.new(literal:, offset:)
     end
 
@@ -70,15 +77,14 @@ module Minic
       literal = token.literal
       offset = token.offset
 
-      raise UnexpectedTokenError.new("expected identifier", literal, offset) unless token.token == :Identifier
+      expect(:Identifier)
 
-      next_token
       AbstractSyntaxTree::Identifier.new(literal:, offset:)
     end
 
     sig { returns(T.nilable(AbstractSyntaxTree::Expression)) }
     def parse_assignment
-      next_token
+      expect(:Equal)
 
       parse_expression
     end
@@ -145,12 +151,7 @@ module Minic
 
     sig { returns(T::Array[AbstractSyntaxTree::Expression]) }
     def parse_argument_list
-      raise UnexpectedTokenError.new(
-        "expected closing parenthesis",
-        token.literal,
-        token.offset,
-      ) unless token.token == :LeftParen
-      next_token
+      expect(:LeftParen)
 
       arguments = []
       until token.token == :RightParen || @lexer.eof?
@@ -158,31 +159,18 @@ module Minic
         next_token if token.token == :Comma
       end
 
-      raise UnexpectedTokenError.new(
-        "expected closing parenthesis",
-        token.literal,
-        token.offset,
-      ) unless token.token == :RightParen
-      next_token
+      expect(:RightParen)
 
       arguments
     end
 
     sig { returns(AbstractSyntaxTree::SubExpression) }
     def parse_sub
-      opening = token.offset
-      next_token
+      opening = expect(:LeftParen)
 
       expression = parse_expression
 
-      raise UnexpectedTokenError.new(
-        "expected closing parenthesis",
-        token.literal,
-        token.offset,
-      ) unless token.token == :RightParen
-
-      closing = token.offset
-      next_token
+      closing = expect(:RightParen)
 
       AbstractSyntaxTree::SubExpression.new(opening:, closing:, expression:)
     end
@@ -213,8 +201,7 @@ module Minic
 
     sig { returns(AbstractSyntaxTree::ParameterList) }
     def parse_parameter_list
-      opening = token.offset
-      next_token
+      opening = expect(:LeftParen)
 
       parameters = []
       until token.token == :RightParen || @lexer.eof?
@@ -222,14 +209,7 @@ module Minic
         next_token if token.token == :Comma
       end
 
-      raise UnexpectedTokenError.new(
-        "expected closing parenthesis",
-        token.literal,
-        token.offset,
-      ) unless token.token == :RightParen
-
-      closing = token.offset
-      next_token
+      closing = expect(:RightParen)
 
       AbstractSyntaxTree::ParameterList.new(opening:, closing:, parameters:)
     end
@@ -244,24 +224,15 @@ module Minic
 
     sig { returns(AbstractSyntaxTree::Block) }
     def parse_block
-      opening = token.offset
-      next_token
+      opening = expect(:LeftBrace)
 
       statements = []
       until token.token == :RightBrace || @lexer.eof?
         statements << parse_statement
-
-        raise UnexpectedTokenError.new(
-          "statement must be terminated with a semicolon",
-          token.literal,
-          token.offset,
-        ) unless token.token == :SemiColon
-
-        next_token
+        expect(:SemiColon)
       end
 
-      closing = token.offset
-      next_token
+      closing = expect(:RightBrace)
 
       AbstractSyntaxTree::Block.new(opening:, closing:, statements:)
     end
@@ -284,15 +255,8 @@ module Minic
 
     sig { params(lhs: AbstractSyntaxTree::Identifier).returns(AbstractSyntaxTree::AssignmentStatement) }
     def parse_assignment_statement(lhs)
-      raise UnexpectedTokenError.new(
-        "statement must be terminated with a semicolon",
-        token.literal,
-        token.offset,
-      ) unless token.token == :Equal
-
       literal = token.literal
-      offset = token.offset
-      next_token
+      offset = expect(:Equal)
 
       rhs = parse_expression
 
@@ -301,8 +265,7 @@ module Minic
 
     sig { returns(AbstractSyntaxTree::IfStatement) }
     def parse_if
-      offset = token.offset
-      next_token
+      offset = expect(:Keyword, "if")
 
       conditional = parse_conditional
       then_block = parse_block
@@ -317,8 +280,7 @@ module Minic
 
     sig { returns(AbstractSyntaxTree::WhileStatement) }
     def parse_while
-      offset = token.offset
-      next_token
+      offset = expect(:Keyword, "while")
 
       conditional = parse_conditional
       block = parse_block
@@ -328,23 +290,11 @@ module Minic
 
     sig { returns(AbstractSyntaxTree::Expression) }
     def parse_conditional
-      raise UnexpectedTokenError.new(
-        "expected opening parenthesis",
-        token.literal,
-        token.offset,
-      ) unless token.token == :LeftParen
-
-      next_token
+      expect(:LeftParen)
 
       expression = parse_expression
 
-      raise UnexpectedTokenError.new(
-        "expected closing parenthesis",
-        token.literal,
-        token.offset,
-      ) unless token.token == :RightParen
-
-      next_token
+      expect(:RightParen)
 
       expression
     end
