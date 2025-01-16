@@ -244,8 +244,14 @@ module Minic
 
     sig { returns(AbstractSyntaxTree::Statement) }
     def parse_statement
-      return parse_while if token.literal == "while"
-      return parse_if if token.literal == "if"
+      case token.literal
+      when "if"
+        return parse_if
+      when "return"
+        return parse_return
+      when "while"
+        return parse_while
+      end
 
       if token.token == :Identifier
         identifier = parse_identifier
@@ -281,6 +287,15 @@ module Minic
       end
 
       AbstractSyntaxTree::IfStatement.new(offset:, conditional:, then_block:, else_block:)
+    end
+
+    sig { returns(AbstractSyntaxTree::ReturnStatement) }
+    def parse_return
+      offset = expect(:Keyword, "return")
+
+      expression = parse_expression unless any?(:SemiColon) # rubocop:disable Style/InvertibleUnlessCondition
+
+      AbstractSyntaxTree::ReturnStatement.new(literal: "return", offset:, expression:)
     end
 
     sig { returns(AbstractSyntaxTree::WhileStatement) }

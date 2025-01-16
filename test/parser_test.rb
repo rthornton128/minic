@@ -578,6 +578,63 @@ module Minic
       assert_equal(expected.size, index, "Number of nodes must match")
     end
 
+    test "parse function declaration with naked return statement in block" do
+      file = FileSet::File.new(body: "int main() { return; }")
+      lexer = Lexer.new(file:)
+      parser = Parser.new(lexer:)
+
+      ast = parser.parse
+
+      return_statement = AbstractSyntaxTree::ReturnStatement.new(literal: "return", offset: 13, expression: nil)
+
+      expected = [return_statement]
+
+      list = find_node(klass: AbstractSyntaxTree::Block, ast:)
+      refute_nil(list)
+
+      index = 0
+      T.must(list).walk do |node|
+        expect = T.must(expected[index])
+
+        assert_instance_of(expect.class, node)
+        assert_equal(expect.literal, node.literal)
+        assert_equal(expect.offset, node.offset)
+        assert_equal(expect.length, node.length)
+        index += 1
+      end
+
+      assert_equal(expected.size, index, "Number of nodes must match")
+    end
+
+    test "parse function declaration with return statement in block" do
+      file = FileSet::File.new(body: "int main() { return 42; }")
+      lexer = Lexer.new(file:)
+      parser = Parser.new(lexer:)
+
+      ast = parser.parse
+
+      expression = AbstractSyntaxTree::IntegerLiteral.new(literal: "42", offset: 20)
+      return_statement = AbstractSyntaxTree::ReturnStatement.new(literal: "return", offset: 13, expression:)
+
+      expected = [return_statement, expression]
+
+      list = find_node(klass: AbstractSyntaxTree::Block, ast:)
+      refute_nil(list)
+
+      index = 0
+      T.must(list).walk do |node|
+        expect = T.must(expected[index])
+
+        assert_instance_of(expect.class, node)
+        assert_equal(expect.literal, node.literal)
+        assert_equal(expect.offset, node.offset)
+        assert_equal(expect.length, node.length)
+        index += 1
+      end
+
+      assert_equal(expected.size, index, "Number of nodes must match")
+    end
+
     test "parse function declaration with while statement in block" do
       file = FileSet::File.new(body: "int main() { while(true) {}; }")
       lexer = Lexer.new(file:)
