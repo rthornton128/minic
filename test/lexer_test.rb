@@ -80,6 +80,15 @@ module Minic
       assert_equal(0, token.offset)
     end
 
+    test "returns matching symbol for - operator" do
+      lexer = Lexer.new(file: FileSet::File.new(body: "-"))
+      token = lexer.scan
+
+      assert_equal(:Minus, token.token)
+      assert_equal("-", token.literal)
+      assert_equal(0, token.offset)
+    end
+
     test "returns matching symbol for double character operator" do
       lexer = Lexer.new(file: FileSet::File.new(body: "=="))
       token = lexer.scan

@@ -33,6 +33,7 @@ module Minic
         "/" => :ForwardSlash,
         "!" => :Exclamation,
         "+" => :Plus,
+        "-" => :Minus,
         "*" => :Star,
         "%" => :Percent,
         "&&" => :And,
