@@ -167,5 +167,14 @@ module Minic
       error = assert_raises(SemanticAnalyzer::Error) { SemanticAnalyzer.new(ast:).check }
       assert_equal("type missmatch 'bool' vs 'int'", error.message)
     end
+
+    test "sub expression with matching type in assignment passes" do
+      file = FileSet::File.new(body: "bool b = (true);")
+      lexer = Lexer.new(file:)
+      parser = Parser.new(lexer:)
+      ast = parser.parse
+
+      SemanticAnalyzer.new(ast:).check
+    end
   end
 end

@@ -58,10 +58,13 @@ module Minic
     sig { params(expression: AbstractSyntaxTree::Expression, scope: Scope).void }
     def check_expression(expression:, scope:)
       case expression
+      when AbstractSyntaxTree::SubExpression
+        check_expression(expression: expression.expression, scope:)
       when AbstractSyntaxTree::UnaryExpression
         unary_type = type_of(node: expression, scope:)
         expr_type = type_of(node: expression.rhs, scope:)
         assert_types(unary_type, expr_type)
+        check_expression(expression: expression.rhs, scope:)
       end
     end
 
@@ -92,6 +95,8 @@ module Minic
         raise Error.new("undeclared variable in assignment", node.literal, node.offset) if type.nil?
 
         type
+      when AbstractSyntaxTree::SubExpression
+        type_of(node: node.expression, scope:)
       when AbstractSyntaxTree::UnaryExpression
         type_of_operator(node.literal, node.offset)
       else

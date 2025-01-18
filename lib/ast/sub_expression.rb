@@ -12,6 +12,9 @@ module Minic
         @expression = expression
       end
 
+      sig { returns(Expression) }
+      attr_reader :expression
+
       sig { override.params(block: T.proc.params(node: Node).void).void }
       def walk(&block)
         yield(@expression)
