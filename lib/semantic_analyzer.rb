@@ -45,6 +45,7 @@ module Minic
       unless var_decl.assignment.nil?
         expr_type = type_of(node: T.must(var_decl.assignment), scope:)
         assert_types(var_type, expr_type)
+        check_expression(expression: T.must(var_decl.assignment), scope:)
       end
 
       # it would be an error to assign a newly declared variable to itself
@@ -52,6 +53,16 @@ module Minic
       # identifier should not be added to the current scope until types and
       # variable lookups have been resolved.
       scope[var_decl.identifier.literal] = var_type
+    end
+
+    sig { params(expression: AbstractSyntaxTree::Expression, scope: Scope).void }
+    def check_expression(expression:, scope:)
+      case expression
+      when AbstractSyntaxTree::UnaryExpression
+        unary_type = type_of(node: expression, scope:)
+        expr_type = type_of(node: expression.rhs, scope:)
+        assert_types(unary_type, expr_type)
+      end
     end
 
     sig { params(a: Type, b: Type).void }
@@ -81,8 +92,22 @@ module Minic
         raise Error.new("undeclared variable in assignment", node.literal, node.offset) if type.nil?
 
         type
+      when AbstractSyntaxTree::UnaryExpression
+        type_of_operator(node.literal, node.offset)
       else
         raise Error.new("invalid or unknown expression", node.literal, node.offset)
+      end
+    end
+
+    sig { params(operator: String, offset: Integer).returns(Type) }
+    def type_of_operator(operator, offset)
+      case operator
+      when "!"
+        Type.new(name: "bool", offset:)
+      when "-"
+        Type.new(name: "int", offset:)
+      else
+        raise Error.new("invalid or unknown operator '#{operator}'", operator, offset)
       end
     end
   end
