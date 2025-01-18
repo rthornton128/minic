@@ -130,6 +130,72 @@ module Minic
       assert_equal("type missmatch 'int' vs 'bool'", error.message)
     end
 
+    test "integer binary expression matching assignment passes" do
+      file = FileSet::File.new(body: "int i = 1 + 2;")
+      lexer = Lexer.new(file:)
+      parser = Parser.new(lexer:)
+      ast = parser.parse
+
+      SemanticAnalyzer.new(ast:).check
+    end
+
+    test "integer binary expression with miss-matched types raises exception" do
+      file = FileSet::File.new(body: "int i = 1 + true;")
+      lexer = Lexer.new(file:)
+      parser = Parser.new(lexer:)
+      ast = parser.parse
+
+      error = assert_raises(SemanticAnalyzer::Error) { SemanticAnalyzer.new(ast:).check }
+      assert_equal("type missmatch 'int' vs 'bool'", error.message)
+    end
+
+    test "boolean binary expression matching assignment passes" do
+      file = FileSet::File.new(body: "bool b = 1 == 2;")
+      lexer = Lexer.new(file:)
+      parser = Parser.new(lexer:)
+      ast = parser.parse
+
+      SemanticAnalyzer.new(ast:).check
+    end
+
+    test "arithmetic binary expression with boolean operands raises exception" do
+      file = FileSet::File.new(body: "bool b = true + false;")
+      lexer = Lexer.new(file:)
+      parser = Parser.new(lexer:)
+      ast = parser.parse
+
+      error = assert_raises(SemanticAnalyzer::Error) { SemanticAnalyzer.new(ast:).check }
+      assert_equal("arithmetic operators not compatible with boolean operands", error.message)
+    end
+
+    test "adding string expression matching assignment passes" do
+      file = FileSet::File.new(body: 'string s = "a" + "b";')
+      lexer = Lexer.new(file:)
+      parser = Parser.new(lexer:)
+      ast = parser.parse
+
+      SemanticAnalyzer.new(ast:).check
+    end
+
+    test "arithmetic binary expression with string operands raises exception" do
+      file = FileSet::File.new(body: 'bool b = "a" / "b";')
+      lexer = Lexer.new(file:)
+      parser = Parser.new(lexer:)
+      ast = parser.parse
+
+      error = assert_raises(SemanticAnalyzer::Error) { SemanticAnalyzer.new(ast:).check }
+      assert_equal("arithmetic operators not compatible with operands", error.message)
+    end
+
+    test "sub expression with matching type in assignment passes" do
+      file = FileSet::File.new(body: "bool b = (true);")
+      lexer = Lexer.new(file:)
+      parser = Parser.new(lexer:)
+      ast = parser.parse
+
+      SemanticAnalyzer.new(ast:).check
+    end
+
     test "negation unary expression in variable declaration assignment passes" do
       file = FileSet::File.new(body: "int i = -1;")
       lexer = Lexer.new(file:)
@@ -166,15 +232,6 @@ module Minic
 
       error = assert_raises(SemanticAnalyzer::Error) { SemanticAnalyzer.new(ast:).check }
       assert_equal("type missmatch 'bool' vs 'int'", error.message)
-    end
-
-    test "sub expression with matching type in assignment passes" do
-      file = FileSet::File.new(body: "bool b = (true);")
-      lexer = Lexer.new(file:)
-      parser = Parser.new(lexer:)
-      ast = parser.parse
-
-      SemanticAnalyzer.new(ast:).check
     end
   end
 end

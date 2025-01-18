@@ -43,9 +43,10 @@ module Minic
       raise Error.new("variables may not be declared void", "", var_decl.offset) if var_type.void?
 
       unless var_decl.assignment.nil?
+        check_expression(expression: T.must(var_decl.assignment), scope:)
+
         expr_type = type_of(node: T.must(var_decl.assignment), scope:)
         assert_types(var_type, expr_type)
-        check_expression(expression: T.must(var_decl.assignment), scope:)
       end
 
       # it would be an error to assign a newly declared variable to itself
@@ -58,6 +59,31 @@ module Minic
     sig { params(expression: AbstractSyntaxTree::Expression, scope: Scope).void }
     def check_expression(expression:, scope:)
       case expression
+      when AbstractSyntaxTree::BinaryExpression
+        check_expression(expression: expression.lhs, scope:)
+        lhs_type = type_of(node: expression.lhs, scope:)
+
+        check_expression(expression: expression.rhs, scope:)
+        rhs_type = type_of(node: expression.rhs, scope:)
+
+        assert_types(lhs_type, rhs_type)
+
+        # this is quite messy, maybe there's a better way to express it?
+        case expression.literal
+        when "+"
+          raise Error.new(
+            "arithmetic operators not compatible with boolean operands",
+            expression.literal,
+            expression.offset,
+          ) if lhs_type.name == "bool" || rhs_type.name == "bool"
+        when "-", "*", "/", "%"
+          bad_types = ["bool", "string"].freeze
+          raise Error.new(
+            "arithmetic operators not compatible with operands",
+            expression.literal,
+            expression.offset,
+          ) if bad_types.include?(lhs_type.name) || bad_types.include?(rhs_type.name)
+        end
       when AbstractSyntaxTree::SubExpression
         check_expression(expression: expression.expression, scope:)
       when AbstractSyntaxTree::UnaryExpression
@@ -95,24 +121,26 @@ module Minic
         raise Error.new("undeclared variable in assignment", node.literal, node.offset) if type.nil?
 
         type
+      when AbstractSyntaxTree::BinaryExpression
+        case node.literal
+        when "==", "<", ">", "&&", "||"
+          Type.new(name: "bool", offset: node.offset)
+        else
+          type_of(node: node.lhs, scope:)
+        end
       when AbstractSyntaxTree::SubExpression
         type_of(node: node.expression, scope:)
       when AbstractSyntaxTree::UnaryExpression
-        type_of_operator(node.literal, node.offset)
+        case node.literal
+        when "!"
+          Type.new(name: "bool", offset: node.offset)
+        when "-"
+          type_of(node: node.rhs, scope:)
+        else
+          raise Error.new("invalid or unknown operator '#{node.literal}'", node.literal, node.offset)
+        end
       else
         raise Error.new("invalid or unknown expression", node.literal, node.offset)
-      end
-    end
-
-    sig { params(operator: String, offset: Integer).returns(Type) }
-    def type_of_operator(operator, offset)
-      case operator
-      when "!"
-        Type.new(name: "bool", offset:)
-      when "-"
-        Type.new(name: "int", offset:)
-      else
-        raise Error.new("invalid or unknown operator '#{operator}'", operator, offset)
       end
     end
   end

@@ -8,7 +8,7 @@ module Minic
         :Plus,
         :Minus,
         :Star,
-        :FowardSlash,
+        :ForwardSlash,
         :Exclamation,
         :Percent,
         :And,
