@@ -12,6 +12,9 @@ module Minic
         @parameters = parameters
       end
 
+      sig { returns(T::Array[Parameter]) }
+      attr_reader :parameters
+
       sig { params(parameter: Parameter).returns(T.self_type) }
       def <<(parameter)
         @parameters << parameter

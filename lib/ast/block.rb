@@ -12,6 +12,9 @@ module Minic
         @statements = statements
       end
 
+      sig { returns(T::Array[Statement]) }
+      attr_reader :statements
+
       sig { params(statement: Statement).returns(T.self_type) }
       def <<(statement)
         @statements << statement

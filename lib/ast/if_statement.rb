@@ -12,6 +12,15 @@ module Minic
         @else_block = else_block
       end
 
+      sig { returns(Expression) }
+      attr_reader :conditional
+
+      sig { returns(Block) }
+      attr_reader :then_block
+
+      sig { returns(T.nilable(Block)) }
+      attr_reader :else_block
+
       sig { params(block: T.proc.params(node: Node).void).void }
       def walk(&block)
         yield(@conditional)

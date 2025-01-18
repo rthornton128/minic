@@ -20,10 +20,10 @@ module Minic
 
       program.declarations.each do |declaration|
         case declaration
-        when AbstractSyntaxTree::VariableDeclaration
-          check_variable_decl(var_decl: declaration, scope:)
         when AbstractSyntaxTree::FunctionDeclaration
           check_function_decl(func_decl: declaration, scope:)
+        when AbstractSyntaxTree::VariableDeclaration
+          check_variable_decl(var_decl: declaration, scope:)
         else
           T.absurd(declaration)
         end
@@ -32,9 +32,60 @@ module Minic
 
     private
 
-    sig { params(func_decl: T.untyped, scope: T.untyped).returns(T.untyped) }
+    sig { params(func_decl: AbstractSyntaxTree::FunctionDeclaration, scope: Scope).void }
     def check_function_decl(func_decl:, scope:)
-      # No op
+      return_type = type_of(node: func_decl.type, scope:)
+      scope[func_decl.identifier.literal] = return_type
+
+      block_scope = Scope.new(parent: scope)
+      func_decl.parameter_list.parameters.each do |parameter|
+        param_type = type_of(node: parameter.type, scope:)
+        scope[parameter.identifier.literal] = param_type
+      end
+
+      block = func_decl.block
+      check_block(block:, return_type:, scope: block_scope)
+
+      # for a function, a block must end in a return statement
+      final_statement = func_decl.block.statements.last
+      raise Error.new(
+        "function block must end with a return statement",
+        func_decl.literal,
+        func_decl.offset,
+      ) if final_statement.nil? || !final_statement.is_a?(AbstractSyntaxTree::ReturnStatement)
+    end
+
+    sig { params(block: AbstractSyntaxTree::Block, return_type: Type, scope: Scope).void }
+    def check_block(block:, return_type:, scope:)
+      block.statements.each do |statement|
+        check_statement(statement:, return_type:, scope:)
+      end
+    end
+
+    sig { params(statement: AbstractSyntaxTree::Statement, return_type: Type, scope: Scope).void }
+    def check_statement(statement:, return_type:, scope:)
+      case statement
+      when AbstractSyntaxTree::AssignmentStatement
+        ident_type = type_of(node: statement.lhs, scope:)
+        expr_type = type_of(node: statement.rhs, scope:)
+        assert_types(ident_type, expr_type)
+      when AbstractSyntaxTree::IfStatement
+        # conditional must evaluate to a boolean
+        cond_type = type_of(node: statement.conditional, scope:)
+        assert_types(Type.new(name: "bool", offset: 0), cond_type)
+
+        check_block(block: statement.then_block, return_type:, scope:)
+        check_block(block: T.must(statement.else_block), return_type:, scope:) unless statement.else_block.nil?
+      when AbstractSyntaxTree::ReturnStatement
+        stmt_type = type_of(node: statement, scope:)
+        assert_types(return_type, stmt_type)
+      when AbstractSyntaxTree::WhileStatement
+        # conditional must evaluate to a boolean
+        cond_type = type_of(node: statement.conditional, scope:)
+        assert_types(Type.new(name: "bool", offset: 0), cond_type)
+
+        check_block(block: statement.block, return_type:, scope:)
+      end
     end
 
     sig { params(var_decl: AbstractSyntaxTree::VariableDeclaration, scope: Scope).void }
@@ -139,6 +190,10 @@ module Minic
         else
           raise Error.new("invalid or unknown operator '#{node.literal}'", node.literal, node.offset)
         end
+      when AbstractSyntaxTree::ReturnStatement
+        return Type.new(name: "void", offset: node.offset) if node.expression.nil?
+
+        type_of(node: T.must(node.expression), scope:)
       else
         raise Error.new("invalid or unknown expression", node.literal, node.offset)
       end

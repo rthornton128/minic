@@ -233,5 +233,101 @@ module Minic
       error = assert_raises(SemanticAnalyzer::Error) { SemanticAnalyzer.new(ast:).check }
       assert_equal("type missmatch 'bool' vs 'int'", error.message)
     end
+
+    test "function declaration passes" do
+      file = FileSet::File.new(body: "void main() { return; }")
+      lexer = Lexer.new(file:)
+      parser = Parser.new(lexer:)
+      ast = parser.parse
+
+      SemanticAnalyzer.new(ast:).check
+    end
+
+    test "function declaration with empty block will raise error" do
+      file = FileSet::File.new(body: "void main() {}")
+      lexer = Lexer.new(file:)
+      parser = Parser.new(lexer:)
+      ast = parser.parse
+
+      error = assert_raises(SemanticAnalyzer::Error) { SemanticAnalyzer.new(ast:).check }
+      assert_equal("function block must end with a return statement", error.message)
+    end
+
+    # parser error that there's no statement. expr_decl not a statement?
+    # test "function declaration with block not ending with return will raise error" do
+    #   file = FileSet::File.new(body: "void main() { int a; }")
+    #   lexer = Lexer.new(file:)
+    #   parser = Parser.new(lexer:)
+    #   ast = parser.parse
+
+    #   error = assert_raises(SemanticAnalyzer::Error) { SemanticAnalyzer.new(ast:).check }
+    #   assert_equal("function block must end with a return statement", error.message)
+    # end
+
+    test "return statement with expression that references parameters passes" do
+      file = FileSet::File.new(body: "int add(int a, int b) { return a + b; }")
+      lexer = Lexer.new(file:)
+      parser = Parser.new(lexer:)
+      ast = parser.parse
+
+      SemanticAnalyzer.new(ast:).check
+    end
+
+    test "function declaration with valid if statement passes" do
+      file = FileSet::File.new(body: "void main() { if(true) {} else {}; return; }")
+      lexer = Lexer.new(file:)
+      parser = Parser.new(lexer:)
+      ast = parser.parse
+
+      SemanticAnalyzer.new(ast:).check
+    end
+
+    test "function declaration with non-boolean conditional if statement raises error" do
+      file = FileSet::File.new(body: "void main() { if(1) {} else {}; return; }")
+      lexer = Lexer.new(file:)
+      parser = Parser.new(lexer:)
+      ast = parser.parse
+
+      error = assert_raises(SemanticAnalyzer::Error) { SemanticAnalyzer.new(ast:).check }
+      assert_equal("type missmatch 'bool' vs 'int'", error.message)
+    end
+
+    test "function declaration with valid while statement passes" do
+      file = FileSet::File.new(body: "void main() { while(true) {}; return; }")
+      lexer = Lexer.new(file:)
+      parser = Parser.new(lexer:)
+      ast = parser.parse
+
+      SemanticAnalyzer.new(ast:).check
+    end
+
+    test "function declaration with non-boolean conditional while statement raises error" do
+      file = FileSet::File.new(body: "void main() { while(1) {}; return; }")
+      lexer = Lexer.new(file:)
+      parser = Parser.new(lexer:)
+      ast = parser.parse
+
+      error = assert_raises(SemanticAnalyzer::Error) { SemanticAnalyzer.new(ast:).check }
+      assert_equal("type missmatch 'bool' vs 'int'", error.message)
+    end
+
+    test "function declaration with valid assignment statement passes" do
+      file = FileSet::File.new(body: "void fn(int a) { a = 1; return; }")
+      lexer = Lexer.new(file:)
+      parser = Parser.new(lexer:)
+      ast = parser.parse
+
+      SemanticAnalyzer.new(ast:).check
+    end
+
+    test "function declaration with invalid assignment statement raises error" do
+      file = FileSet::File.new(body: "void fn(bool b) { b = 1; return; }")
+      lexer = Lexer.new(file:)
+      parser = Parser.new(lexer:)
+      ast = parser.parse
+
+      error = assert_raises(SemanticAnalyzer::Error) { SemanticAnalyzer.new(ast:).check }
+      assert_equal("type missmatch 'bool' vs 'int'", error.message)
+    end
   end
 end
