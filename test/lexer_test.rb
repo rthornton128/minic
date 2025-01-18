@@ -98,6 +98,14 @@ module Minic
       assert_equal(0, token.offset)
     end
 
+    test "scanning double character operator advances scanner 2 steps" do
+      lexer = Lexer.new(file: FileSet::File.new(body: "== x"))
+      lexer.scan
+      token = lexer.scan
+
+      assert_equal(3, token.offset)
+    end
+
     test "returns double for numeric starting with zero and contains a decimal" do
       lexer = Lexer.new(file: FileSet::File.new(body: "0.1"))
       token = lexer.scan
