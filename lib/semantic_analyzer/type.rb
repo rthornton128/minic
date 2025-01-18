@@ -4,9 +4,7 @@
 module Minic
   class SemanticAnalyzer
     class Type
-      extend T::Helpers
-
-      abstract!
+      TYPES = [:bool, :double, :int, :string, :void].freeze
 
       sig { params(name: String, offset: Integer).void }
       def initialize(name:, offset:)
@@ -20,8 +18,25 @@ module Minic
       sig { returns(Integer) }
       attr_reader :offset
 
-      sig { abstract.params(other: Type).returns(T::Boolean) }
-      def ==(other); end
+      sig { params(other: Type).returns(T::Boolean) }
+      def ==(other)
+        name == other.name
+      end
+
+      sig { returns(T::Boolean) }
+      def void?
+        @name == "void"
+      end
+
+      sig { returns(T::Boolean) }
+      def valid?
+        TYPES.include?(@name.to_sym)
+      end
+
+      sig { returns(String) }
+      def to_s
+        @name
+      end
     end
   end
 end

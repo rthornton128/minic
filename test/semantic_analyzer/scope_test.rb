@@ -13,7 +13,7 @@ module Minic
 
       test "inserting and looking up a new entry is successful" do
         scope = SemanticAnalyzer::Scope.new(parent: nil)
-        type = BasicType.new(name: "int", offset: 0)
+        type = Type.new(name: "int", offset: 0)
         scope["i"] = type
 
         assert_equal(type, scope["i"])
@@ -21,7 +21,7 @@ module Minic
 
       test "looking up a nested scope variable is successful" do
         parent = SemanticAnalyzer::Scope.new(parent: nil)
-        type = BasicType.new(name: "int", offset: 0)
+        type = Type.new(name: "int", offset: 0)
         parent["i"] = type
 
         scope = SemanticAnalyzer::Scope.new(parent:)

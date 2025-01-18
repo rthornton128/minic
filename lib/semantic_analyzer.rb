@@ -2,7 +2,6 @@
 # frozen_string_literal: true
 
 require_relative "semantic_analyzer/type"
-require_relative "semantic_analyzer/basic_type"
 require_relative "semantic_analyzer/scope"
 
 module Minic
@@ -41,6 +40,8 @@ module Minic
     sig { params(var_decl: AbstractSyntaxTree::VariableDeclaration, scope: Scope).void }
     def check_variable_decl(var_decl:, scope:)
       var_type = type_of(node: var_decl.type, scope:)
+      raise Error.new("variables may not be declared void", "", var_decl.offset) if var_type.void?
+
       scope[var_decl.identifier.literal] = var_type
 
       unless var_decl.assignment.nil?
@@ -62,15 +63,15 @@ module Minic
     def type_of(node:, scope:)
       case node
       when AbstractSyntaxTree::BooleanLiteral
-        BasicType.new(name: "bool", offset: node.offset)
+        Type.new(name: "bool", offset: node.offset)
       when AbstractSyntaxTree::DoubleLiteral
-        BasicType.new(name: "double", offset: node.offset)
+        Type.new(name: "double", offset: node.offset)
       when AbstractSyntaxTree::StringLiteral
-        BasicType.new(name: "string", offset: node.offset)
+        Type.new(name: "string", offset: node.offset)
       when AbstractSyntaxTree::IntegerLiteral
-        BasicType.new(name: "int", offset: node.offset)
+        Type.new(name: "int", offset: node.offset)
       else
-        BasicType.new(name: node.literal, offset: node.offset)
+        Type.new(name: node.literal, offset: node.offset)
       end
     end
   end
