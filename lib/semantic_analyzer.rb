@@ -42,18 +42,22 @@ module Minic
       var_type = type_of(node: var_decl.type, scope:)
       raise Error.new("variables may not be declared void", "", var_decl.offset) if var_type.void?
 
-      scope[var_decl.identifier.literal] = var_type
-
       unless var_decl.assignment.nil?
         expr_type = type_of(node: T.must(var_decl.assignment), scope:)
         assert_types(var_type, expr_type)
       end
+
+      # it would be an error to assign a newly declared variable to itself
+      # (int i = i;) to make sure this self-referential error is caught, the
+      # identifier should not be added to the current scope until types and
+      # variable lookups have been resolved.
+      scope[var_decl.identifier.literal] = var_type
     end
 
     sig { params(a: Type, b: Type).void }
     def assert_types(a, b)
       raise Error.new(
-        "type missmatch #{a}, #{b}",
+        "type missmatch '#{a}' vs '#{b}'",
         "",
         b.offset,
       ) if a != b
@@ -70,8 +74,15 @@ module Minic
         Type.new(name: "string", offset: node.offset)
       when AbstractSyntaxTree::IntegerLiteral
         Type.new(name: "int", offset: node.offset)
-      else
+      when AbstractSyntaxTree::Keyword
         Type.new(name: node.literal, offset: node.offset)
+      when AbstractSyntaxTree::Identifier
+        type = scope[node.literal]
+        raise Error.new("undeclared variable in assignment", node.literal, node.offset) if type.nil?
+
+        type
+      else
+        raise Error.new("invalid or unknown expression", node.literal, node.offset)
       end
     end
   end

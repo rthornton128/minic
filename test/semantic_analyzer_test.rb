@@ -14,13 +14,14 @@ module Minic
       SemanticAnalyzer.new(ast:).check
     end
 
-    test "boolean literal assigned to double variable does not raise error" do
+    test "boolean literal assigned to double variable raises error" do
       file = FileSet::File.new(body: "double b = true; }")
       lexer = Lexer.new(file:)
       parser = Parser.new(lexer:)
       ast = parser.parse
 
-      assert_raises(SemanticAnalyzer::Error) { SemanticAnalyzer.new(ast:).check }
+      error = assert_raises(SemanticAnalyzer::Error) { SemanticAnalyzer.new(ast:).check }
+      assert_equal("type missmatch 'double' vs 'bool'", error.message)
     end
 
     test "double literal assigned to double variable does not raise error" do
@@ -32,13 +33,14 @@ module Minic
       SemanticAnalyzer.new(ast:).check
     end
 
-    test "double literal assigned to boolean variable does not raise error" do
+    test "double literal assigned to boolean variable raises error" do
       file = FileSet::File.new(body: "double d = true; }")
       lexer = Lexer.new(file:)
       parser = Parser.new(lexer:)
       ast = parser.parse
 
-      assert_raises(SemanticAnalyzer::Error) { SemanticAnalyzer.new(ast:).check }
+      error = assert_raises(SemanticAnalyzer::Error) { SemanticAnalyzer.new(ast:).check }
+      assert_equal("type missmatch 'double' vs 'bool'", error.message)
     end
 
     test "integer literal assigned to integer variable does not raise error" do
@@ -50,13 +52,14 @@ module Minic
       SemanticAnalyzer.new(ast:).check
     end
 
-    test "integer literal assigned to boolean variable does not raise error" do
+    test "integer literal assigned to boolean variable raises error" do
       file = FileSet::File.new(body: "int i = true; }")
       lexer = Lexer.new(file:)
       parser = Parser.new(lexer:)
       ast = parser.parse
 
-      assert_raises(SemanticAnalyzer::Error) { SemanticAnalyzer.new(ast:).check }
+      error = assert_raises(SemanticAnalyzer::Error) { SemanticAnalyzer.new(ast:).check }
+      assert_equal("type missmatch 'int' vs 'bool'", error.message)
     end
 
     test "string literal assigned to string variable does not raise error" do
@@ -68,13 +71,63 @@ module Minic
       SemanticAnalyzer.new(ast:).check
     end
 
-    test "string literal assigned to boolean variable does not raise error" do
+    test "string literal assigned to boolean variable raises error" do
       file = FileSet::File.new(body: "string s = true; }")
       lexer = Lexer.new(file:)
       parser = Parser.new(lexer:)
       ast = parser.parse
 
-      assert_raises(SemanticAnalyzer::Error) { SemanticAnalyzer.new(ast:).check }
+      error = assert_raises(SemanticAnalyzer::Error) { SemanticAnalyzer.new(ast:).check }
+      assert_equal("type missmatch 'string' vs 'bool'", error.message)
+    end
+
+    test "variable declared void raises error" do
+      file = FileSet::File.new(body: "void v; }")
+      lexer = Lexer.new(file:)
+      parser = Parser.new(lexer:)
+      ast = parser.parse
+
+      error = assert_raises(SemanticAnalyzer::Error) { SemanticAnalyzer.new(ast:).check }
+      assert_equal("variables may not be declared void", error.message)
+    end
+
+    test "undeclared identifier in variable declaration assignment raises error" do
+      file = FileSet::File.new(body: "int i = x; }")
+      lexer = Lexer.new(file:)
+      parser = Parser.new(lexer:)
+      ast = parser.parse
+
+      error = assert_raises(SemanticAnalyzer::Error) { SemanticAnalyzer.new(ast:).check }
+      assert_equal("undeclared variable in assignment", error.message)
+    end
+
+    test "self-referenence in variable declaration assignment raises error" do
+      file = FileSet::File.new(body: "int i = i; }")
+      lexer = Lexer.new(file:)
+      parser = Parser.new(lexer:)
+      ast = parser.parse
+
+      error = assert_raises(SemanticAnalyzer::Error) { SemanticAnalyzer.new(ast:).check }
+      assert_equal("undeclared variable in assignment", error.message)
+    end
+
+    test "variable with matching type in variable declaration assignment does not raise error" do
+      file = FileSet::File.new(body: "int x; int i = x; }")
+      lexer = Lexer.new(file:)
+      parser = Parser.new(lexer:)
+      ast = parser.parse
+
+      SemanticAnalyzer.new(ast:).check
+    end
+
+    test "variable with miss-matched type in variable declaration assignment raises1 error" do
+      file = FileSet::File.new(body: "bool b; int i = b; }")
+      lexer = Lexer.new(file:)
+      parser = Parser.new(lexer:)
+      ast = parser.parse
+
+      error = assert_raises(SemanticAnalyzer::Error) { SemanticAnalyzer.new(ast:).check }
+      assert_equal("type missmatch 'int' vs 'bool'", error.message)
     end
   end
 end
