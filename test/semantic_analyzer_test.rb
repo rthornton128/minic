@@ -329,5 +329,63 @@ module Minic
       error = assert_raises(SemanticAnalyzer::Error) { SemanticAnalyzer.new(ast:).check }
       assert_equal("type missmatch 'bool' vs 'int'", error.message)
     end
+
+    test "function declaration with matching recursive function call passes" do
+      file = FileSet::File.new(body: "bool fn(bool b) { return fn(true); }")
+      lexer = Lexer.new(file:)
+      parser = Parser.new(lexer:)
+      ast = parser.parse
+
+      SemanticAnalyzer.new(ast:).check
+    end
+
+    test "function declaration with invalid return function statement raises error" do
+      file = FileSet::File.new(body: "bool b() { return true; } int i() { return b(); }")
+      lexer = Lexer.new(file:)
+      parser = Parser.new(lexer:)
+      ast = parser.parse
+
+      error = assert_raises(SemanticAnalyzer::Error) { SemanticAnalyzer.new(ast:).check }
+      assert_equal("type missmatch 'int' vs 'bool'", error.message)
+    end
+
+    test "function declaration with valid arguments passes" do
+      file = FileSet::File.new(body: "int add(int a, int b) { return add(1, 2); }")
+      lexer = Lexer.new(file:)
+      parser = Parser.new(lexer:)
+      ast = parser.parse
+
+      SemanticAnalyzer.new(ast:).check
+    end
+
+    test "function declaration with too few arguments count in return statement raises error" do
+      file = FileSet::File.new(body: "int add(int a, int b) { return add(1); }")
+      lexer = Lexer.new(file:)
+      parser = Parser.new(lexer:)
+      ast = parser.parse
+
+      error = assert_raises(SemanticAnalyzer::Error) { SemanticAnalyzer.new(ast:).check }
+      assert_equal("expected 2 arguments but got 1", error.message)
+    end
+
+    test "function declaration with too many arguments count in return statement raises error" do
+      file = FileSet::File.new(body: "int fn(int a) { return fn(1, 2); }")
+      lexer = Lexer.new(file:)
+      parser = Parser.new(lexer:)
+      ast = parser.parse
+
+      error = assert_raises(SemanticAnalyzer::Error) { SemanticAnalyzer.new(ast:).check }
+      assert_equal("expected 1 arguments but got 2", error.message)
+    end
+
+    test "function declaration with miss-matched types in function call raises error" do
+      file = FileSet::File.new(body: "int fn(int a) { return fn(true); }")
+      lexer = Lexer.new(file:)
+      parser = Parser.new(lexer:)
+      ast = parser.parse
+
+      error = assert_raises(SemanticAnalyzer::Error) { SemanticAnalyzer.new(ast:).check }
+      assert_equal("type missmatch 'int' vs 'bool'", error.message)
+    end
   end
 end
