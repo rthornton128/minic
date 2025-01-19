@@ -6,7 +6,7 @@ module Minic
     class FunctionType < Type
       sig { params(return_type: Type, param_types: T::Array[Type]).void }
       def initialize(return_type:, param_types:)
-        super(name: return_type.name, offset: return_type.offset)
+        super(name: return_type.name, position: return_type.position)
         @param_types = param_types
       end
 

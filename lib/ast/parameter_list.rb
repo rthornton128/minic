@@ -3,10 +3,11 @@
 
 module Minic
   class AbstractSyntaxTree
-    class ParameterList < Node
-      sig { params(opening: Integer, closing: Integer, parameters: T::Array[Parameter]).void }
+    class ParameterList
+      include Node
+
+      sig { params(opening: FileSet::Position, closing: FileSet::Position, parameters: T::Array[Parameter]).void }
       def initialize(opening:, closing:, parameters:)
-        super()
         @opening = opening
         @closing = closing
         @parameters = parameters
@@ -15,13 +16,18 @@ module Minic
       sig { returns(T::Array[Parameter]) }
       attr_reader :parameters
 
+      sig { override.returns(FileSet::Position) }
+      def position
+        @opening
+      end
+
       sig { params(parameter: Parameter).returns(T.self_type) }
       def <<(parameter)
         @parameters << parameter
         self
       end
 
-      sig { params(block: T.proc.params(node: Node).void).void }
+      sig { override.params(block: T.proc.params(node: Node).void).void }
       def walk(&block)
         @parameters.each do |parameter|
           yield(parameter)

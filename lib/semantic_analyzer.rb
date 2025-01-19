@@ -51,8 +51,7 @@ module Minic
       final_statement = func_decl.block.statements.last
       raise Error.new(
         "function block must end with a return statement",
-        func_decl.literal,
-        func_decl.offset,
+        position: func_decl.position,
       ) if final_statement.nil? || !final_statement.is_a?(AbstractSyntaxTree::ReturnStatement)
     end
 
@@ -75,7 +74,7 @@ module Minic
       when AbstractSyntaxTree::IfStatement
         # conditional must evaluate to a boolean
         cond_type = type_of(node: statement.conditional, scope:)
-        assert_types(Type.new(name: "bool", offset: 0), cond_type)
+        assert_types(Type.new(name: "bool", position: statement.position), cond_type)
 
         check_block(block: statement.then_block, return_type:, scope:)
         check_block(block: T.must(statement.else_block), return_type:, scope:) unless statement.else_block.nil?
@@ -87,7 +86,7 @@ module Minic
       when AbstractSyntaxTree::WhileStatement
         # conditional must evaluate to a boolean
         cond_type = type_of(node: statement.conditional, scope:)
-        assert_types(Type.new(name: "bool", offset: 0), cond_type)
+        assert_types(Type.new(name: "bool", position: statement.position), cond_type)
 
         check_block(block: statement.block, return_type:, scope:)
       end
@@ -102,8 +101,7 @@ module Minic
 
       raise Error.new(
         "expected #{param_types.size} arguments but got #{args.size}",
-        func_call.literal,
-        func_call.offset,
+        position: func_call.position,
       ) if param_types.size != args.size
 
       param_types.each_with_index do |param_type, i|
@@ -115,7 +113,7 @@ module Minic
     sig { params(var_decl: AbstractSyntaxTree::VariableDeclaration, scope: Scope).void }
     def check_variable_decl(var_decl:, scope:)
       var_type = type_of(node: var_decl.type, scope:)
-      raise Error.new("variables may not be declared void", "", var_decl.offset) if var_type.void?
+      raise Error.new("variables may not be declared void", "", position: var_decl.position) if var_type.void?
 
       unless var_decl.assignment.nil?
         check_expression(expression: T.must(var_decl.assignment), scope:)
@@ -148,15 +146,13 @@ module Minic
         when "+"
           raise Error.new(
             "arithmetic operators not compatible with boolean operands",
-            expression.literal,
-            expression.offset,
+            position: expression.position,
           ) if lhs_type.name == "bool" || rhs_type.name == "bool"
         when "-", "*", "/", "%"
           bad_types = ["bool", "string"].freeze
           raise Error.new(
             "arithmetic operators not compatible with operands",
-            expression.literal,
-            expression.offset,
+            position: expression.position,
           ) if bad_types.include?(lhs_type.name) || bad_types.include?(rhs_type.name)
         end
       when AbstractSyntaxTree::FunctionCall
@@ -175,8 +171,7 @@ module Minic
     def assert_types(a, b)
       raise Error.new(
         "type missmatch '#{a}' vs '#{b}'",
-        "",
-        b.offset,
+        position: b.position,
       ) if a != b
     end
 
@@ -184,42 +179,40 @@ module Minic
     def type_of(node:, scope:)
       case node
       when AbstractSyntaxTree::BooleanLiteral
-        Type.new(name: "bool", offset: node.offset)
+        Type.new(name: "bool", position: node.position)
       when AbstractSyntaxTree::DoubleLiteral
-        Type.new(name: "double", offset: node.offset)
+        Type.new(name: "double", position: node.position)
       when AbstractSyntaxTree::StringLiteral
-        Type.new(name: "string", offset: node.offset)
+        Type.new(name: "string", position: node.position)
       when AbstractSyntaxTree::IntegerLiteral
-        Type.new(name: "int", offset: node.offset)
+        Type.new(name: "int", position: node.position)
       when AbstractSyntaxTree::Keyword
-        Type.new(name: node.literal, offset: node.offset)
+        Type.new(name: node.literal, position: node.position)
       when AbstractSyntaxTree::Identifier
         type = scope[node.literal]
-        raise Error.new("undeclared variable in assignment", node.literal, node.offset) if type.nil?
+        raise Error.new("undeclared variable in assignment", position: node.position) if type.nil?
 
         type
       when AbstractSyntaxTree::BinaryExpression
         case node.literal
         when "==", "<", ">", "&&", "||"
-          Type.new(name: "bool", offset: node.offset)
+          Type.new(name: "bool", position: node.position)
         else
           type_of(node: node.lhs, scope:)
         end
       when AbstractSyntaxTree::Parameter
-        Type.new(name: node.type.literal, offset: node.offset)
+        Type.new(name: node.type.literal, position: node.position)
       when AbstractSyntaxTree::FunctionCall
         func_type = scope[node.identifier.literal]
 
         raise Error.new(
           "#{node.identifier.literal} not found",
-          node.literal,
-          node.offset,
+          position: node.position,
         ) if func_type.nil?
 
         raise Error.new(
           "#{node.identifier.literal} is not function",
-          node.literal,
-          node.offset,
+          position: node.position,
         ) unless func_type.is_a?(FunctionType)
 
         func_type
@@ -228,14 +221,14 @@ module Minic
       when AbstractSyntaxTree::UnaryExpression
         case node.literal
         when "!"
-          Type.new(name: "bool", offset: node.offset)
+          Type.new(name: "bool", position: node.position)
         when "-"
           type_of(node: node.rhs, scope:)
         else
-          raise Error.new("invalid or unknown operator '#{node.literal}'", node.literal, node.offset)
+          raise Error.new("invalid or unknown operator '#{node.literal}'", position: node.position)
         end
       when AbstractSyntaxTree::ReturnStatement
-        return Type.new(name: "void", offset: node.offset) if node.expression.nil?
+        return Type.new(name: "void", position: node.position) if node.expression.nil?
 
         type_of(node: T.must(node.expression), scope:)
       when AbstractSyntaxTree::FunctionDeclaration
@@ -248,7 +241,7 @@ module Minic
 
         FunctionType.new(return_type:, param_types:)
       else
-        raise Error.new("invalid or unknown expression", node.literal, node.offset)
+        raise Error.new("invalid or unknown expression", position: node.position)
       end
     end
   end

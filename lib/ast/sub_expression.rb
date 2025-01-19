@@ -3,17 +3,21 @@
 
 module Minic
   class AbstractSyntaxTree
-    class SubExpression < Node
-      sig { params(opening: Integer, closing: Integer, expression: Expression).void }
+    class SubExpression
+      include Node
+
+      sig { params(opening: FileSet::Position, closing: FileSet::Position, expression: Expression).void }
       def initialize(opening:, closing:, expression:)
-        super()
-        @opening = opening
+        @position = opening
         @closing = closing
         @expression = expression
       end
 
       sig { returns(Expression) }
       attr_reader :expression
+
+      sig { override.returns(FileSet::Position) }
+      attr_reader :position
 
       sig { override.params(block: T.proc.params(node: Node).void).void }
       def walk(&block)

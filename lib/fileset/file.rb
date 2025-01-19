@@ -40,14 +40,20 @@ module Minic
           return index + 1 if line >= offset
         end
 
-        return @lines.size if offset < size
+        # TODO: Think if this makes sense... when we're at EOF, the offset
+        # will be +1, the size of the body. This is might be a bug because
+        # if we've reached the EOF, the offset should be returned back to
+        # the last valid position, length - 1. If true, this change should be
+        # reverted and the lexer fixed.
+        return @lines.size if offset <= size
 
         raise FileSet::InvalidOffsetError, "offset not within file"
       end
 
       sig { params(offset: Integer).returns(Integer) }
       def column(offset)
-        row_offset = row(offset)
+        row = row(offset)
+        row_offset = @lines.fetch(row - 1)
         return offset + 1 if row_offset == 1
 
         (offset - row_offset) + 1

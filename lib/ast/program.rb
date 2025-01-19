@@ -3,15 +3,20 @@
 
 module Minic
   class AbstractSyntaxTree
-    class Program < Node
+    class Program
+      include Node
+
       sig { returns(T::Array[Declaration]) }
       attr_reader :declarations
 
-      sig { params(literal: String, offset: Integer).void }
-      def initialize(literal: "", offset: 0)
-        super
+      sig { params(position: FileSet::Position).void }
+      def initialize(position:)
         @declarations = T.let([], T::Array[Declaration])
+        @position = position
       end
+
+      sig { override.returns(FileSet::Position) }
+      attr_reader :position
 
       sig { params(declaration: Declaration).returns(T.self_type) }
       def <<(declaration)

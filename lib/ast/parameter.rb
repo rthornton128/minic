@@ -3,10 +3,11 @@
 
 module Minic
   class AbstractSyntaxTree
-    class Parameter < Node
+    class Parameter
+      include Node
+
       sig { params(type: Keyword, identifier: Identifier).void }
       def initialize(type:, identifier:)
-        super()
         @type = type
         @identifier = identifier
       end
@@ -16,6 +17,11 @@ module Minic
 
       sig { returns(Identifier) }
       attr_reader :identifier
+
+      sig { override.returns(FileSet::Position) }
+      def position
+        @type.position
+      end
 
       sig { override.params(block: T.proc.params(node: Node).void).void }
       def walk(&block)

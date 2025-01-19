@@ -3,14 +3,21 @@
 
 module Minic
   class AbstractSyntaxTree
-    class IfStatement < Node
-      sig { params(offset: Integer, conditional: Expression, then_block: Block, else_block: T.nilable(Block)).void }
-      def initialize(offset:, conditional:, then_block:, else_block: nil)
-        super(literal: "where", offset:)
+    class IfStatement
+      include Node
+
+      sig do
+        params(if_pos: FileSet::Position, conditional: Expression, then_block: Block, else_block: T.nilable(Block)).void
+      end
+      def initialize(if_pos:, conditional:, then_block:, else_block: nil)
+        @position = if_pos
         @conditional = conditional
         @then_block = then_block
         @else_block = else_block
       end
+
+      sig { override.returns(FileSet::Position) }
+      attr_reader :position
 
       sig { returns(Expression) }
       attr_reader :conditional
@@ -21,7 +28,7 @@ module Minic
       sig { returns(T.nilable(Block)) }
       attr_reader :else_block
 
-      sig { params(block: T.proc.params(node: Node).void).void }
+      sig { override.params(block: T.proc.params(node: Node).void).void }
       def walk(&block)
         yield(@conditional)
         @conditional.walk(&block)

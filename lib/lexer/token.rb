@@ -27,11 +27,15 @@ module Minic
       sig { returns(Integer) }
       attr_reader :offset
 
-      sig { params(token: Symbol, literal: String, offset: Integer).void }
-      def initialize(token:, literal:, offset:)
+      sig { returns(FileSet::Position) }
+      attr_reader :position
+
+      sig { params(token: Symbol, literal: String, position: FileSet::Position).void }
+      def initialize(token:, literal:, position:)
         @token = token
         @literal = literal
-        @offset = offset
+        @offset = T.let(0, Integer)
+        @position = position
       end
 
       sig { returns(T::Boolean) }

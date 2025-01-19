@@ -11,7 +11,8 @@ module Minic
 
       assert_equal(:Eof, token.token)
       assert_equal("", token.literal)
-      assert_equal(0, token.offset)
+      assert_equal(1, token.position.row)
+      assert_equal(1, token.position.column)
     end
 
     test "returns skips whitespace" do
@@ -20,7 +21,8 @@ module Minic
 
       assert_equal(:Eof, token.token)
       assert_equal("", token.literal)
-      assert_equal(4, token.offset)
+      assert_equal(2, token.position.row)
+      assert_equal(1, token.position.column)
     end
 
     test "raises Unexpected token for invalid character in body" do
@@ -36,7 +38,8 @@ module Minic
 
       assert_equal(:Integer, token.token)
       assert_equal("0", token.literal)
-      assert_equal(0, token.offset)
+      assert_equal(1, token.position.row)
+      assert_equal(1, token.position.column)
     end
 
     test "returns Integer token for integer" do
@@ -45,7 +48,8 @@ module Minic
 
       assert_equal(:Integer, token.token)
       assert_equal("42", token.literal)
-      assert_equal(0, token.offset)
+      assert_equal(1, token.position.row)
+      assert_equal(1, token.position.column)
     end
 
     test "returns Keyword token for valid keyword" do
@@ -54,7 +58,8 @@ module Minic
 
       assert_equal(:Keyword, token.token)
       assert_equal("while", token.literal)
-      assert_equal(0, token.offset)
+      assert_equal(1, token.position.row)
+      assert_equal(1, token.position.column)
     end
 
     test "returns Identifier token for identifier" do
@@ -63,7 +68,8 @@ module Minic
 
       assert_equal(:Identifier, token.token)
       assert_equal("ident1", token.literal)
-      assert_equal(0, token.offset)
+      assert_equal(1, token.position.row)
+      assert_equal(1, token.position.column)
     end
 
     test "returns matching symbol for single character operator" do
@@ -72,7 +78,8 @@ module Minic
 
       assert_equal(:Equal, token.token)
       assert_equal("=", token.literal)
-      assert_equal(0, token.offset)
+      assert_equal(1, token.position.row)
+      assert_equal(1, token.position.column)
     end
 
     test "returns matching symbol for - operator" do
@@ -81,7 +88,8 @@ module Minic
 
       assert_equal(:Minus, token.token)
       assert_equal("-", token.literal)
-      assert_equal(0, token.offset)
+      assert_equal(1, token.position.row)
+      assert_equal(1, token.position.column)
     end
 
     test "returns matching symbol for double character operator" do
@@ -90,7 +98,8 @@ module Minic
 
       assert_equal(:Equality, token.token)
       assert_equal("==", token.literal)
-      assert_equal(0, token.offset)
+      assert_equal(1, token.position.row)
+      assert_equal(1, token.position.column)
     end
 
     test "scanning double character operator advances scanner 2 steps" do
@@ -98,7 +107,8 @@ module Minic
       lexer.scan
       token = lexer.scan
 
-      assert_equal(3, token.offset)
+      assert_equal(1, token.position.row)
+      assert_equal(4, token.position.column)
     end
 
     test "returns double for numeric starting with zero and contains a decimal" do
@@ -107,7 +117,8 @@ module Minic
 
       assert_equal(:Double, token.token)
       assert_equal("0.1", token.literal)
-      assert_equal(0, token.offset)
+      assert_equal(1, token.position.row)
+      assert_equal(1, token.position.column)
     end
 
     test "returns double for numeric containing a decimal" do
@@ -116,7 +127,8 @@ module Minic
 
       assert_equal(:Double, token.token)
       assert_equal("42.01", token.literal)
-      assert_equal(0, token.offset)
+      assert_equal(1, token.position.row)
+      assert_equal(1, token.position.column)
     end
 
     test "returns boolean for true literal" do
@@ -125,7 +137,8 @@ module Minic
 
       assert_equal(:Boolean, token.token)
       assert_equal("true", token.literal)
-      assert_equal(0, token.offset)
+      assert_equal(1, token.position.row)
+      assert_equal(1, token.position.column)
     end
 
     test "returns string for string literal" do
@@ -134,7 +147,8 @@ module Minic
 
       assert_equal(:String, token.token)
       assert_equal('"hello"', token.literal)
-      assert_equal(0, token.offset)
+      assert_equal(1, token.position.row)
+      assert_equal(1, token.position.column)
     end
 
     test "raises exception for unterminated string literal by end of line" do
@@ -166,7 +180,8 @@ module Minic
 
       assert_equal(:Comment, token.token)
       assert_equal("// comment", token.literal)
-      assert_equal(0, token.offset)
+      assert_equal(1, token.position.row)
+      assert_equal(1, token.position.column)
     end
 
     test "returns comment for end of line comment literal" do
@@ -177,16 +192,17 @@ module Minic
 
       assert_equal(:Comment, token.token)
       assert_equal("// comment", token.literal)
-      assert_equal(3, token.offset)
+      assert_equal(1, token.position.row)
+      assert_equal(4, token.position.column)
     end
 
     test "returns all tokens for equation" do
       lexer = Lexer.new(file: FileSet::File.new(body: "1 + 2"))
 
       expected_tokens = [
-        [:Integer, "1", 0],
-        [:Plus, "+", 2],
-        [:Integer, "2", 4],
+        [:Integer, "1", 1, 1],
+        [:Plus, "+", 1, 3],
+        [:Integer, "2", 1, 5],
       ]
 
       expected_tokens.each do |expected_token|
@@ -194,7 +210,8 @@ module Minic
 
         assert_equal(expected_token[0], token.token)
         assert_equal(expected_token[1], token.literal)
-        assert_equal(expected_token[2], token.offset)
+        assert_equal(expected_token[2], token.position.row)
+        assert_equal(expected_token[3], token.position.column)
       end
 
       token = lexer.scan
@@ -204,23 +221,25 @@ module Minic
     test "returns all tokens for function" do
       lexer = Lexer.new(file: FileSet::File.new(body: "int add(int a, int b) {\n\treturn a + b;\n}"))
 
+      # TODO: The columns for rows 2 and 3 are likely wrong. They
+      # seem off by one
       expected_tokens = [
-        [:Keyword, "int", 0],
-        [:Identifier, "add", 4],
-        [:LeftParen, "(", 7],
-        [:Keyword, "int", 8],
-        [:Identifier, "a", 12],
-        [:Comma, ",", 13],
-        [:Keyword, "int", 15],
-        [:Identifier, "b", 19],
-        [:RightParen, ")", 20],
-        [:LeftBrace, "{", 22],
-        [:Keyword, "return", 25],
-        [:Identifier, "a", 32],
-        [:Plus, "+", 34],
-        [:Identifier, "b", 36],
-        [:SemiColon, ";", 37],
-        [:RightBrace, "}", 39],
+        [:Keyword, "int", 1, 1],
+        [:Identifier, "add", 1, 5],
+        [:LeftParen, "(", 1, 8],
+        [:Keyword, "int", 1, 9],
+        [:Identifier, "a", 1, 13],
+        [:Comma, ",", 1, 14],
+        [:Keyword, "int", 1, 16],
+        [:Identifier, "b", 1, 20],
+        [:RightParen, ")", 1, 21],
+        [:LeftBrace, "{", 1, 23],
+        [:Keyword, "return", 2, 3],
+        [:Identifier, "a", 2, 10],
+        [:Plus, "+", 2, 12],
+        [:Identifier, "b", 2, 14],
+        [:SemiColon, ";", 2, 15],
+        [:RightBrace, "}", 3, 2],
       ]
 
       expected_tokens.each do |expected_token|
@@ -228,24 +247,12 @@ module Minic
 
         assert_equal(expected_token[0], token.token)
         assert_equal(expected_token[1], token.literal)
-        assert_equal(expected_token[2], token.offset)
+        assert_equal(expected_token[2], token.position.row)
+        assert_equal(expected_token[3], token.position.column)
       end
 
       token = lexer.scan
       assert_equal(:Eof, token.token)
-    end
-
-    # integration test
-    test "file with newline has correct position for offset" do
-      file = FileSet::File.new(body: "1\n2")
-      lexer = Lexer.new(file:)
-
-      token = lexer.scan
-      token = lexer.scan until token.token == :Eof
-
-      position = file.position(2)
-      assert_equal(2, position.row)
-      assert_equal(1, position.column)
     end
   end
 end

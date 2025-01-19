@@ -3,7 +3,7 @@
 
 module Minic
   class AbstractSyntaxTree
-    class DoubleLiteral < Node
+    class DoubleLiteral < BaseLiteral
     end
   end
 end

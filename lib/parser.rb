@@ -28,16 +28,15 @@ module Minic
       types.any? { |type| token.token == type }
     end
 
-    sig { params(type: Symbol, literal: String).returns(Integer) }
+    sig { params(type: Symbol, literal: String).returns(FileSet::Position) }
     def expect(type, literal = "")
       name = literal.empty? ? type.to_s.downcase : literal
       raise UnexpectedTokenError.new(
         "expected #{name}",
-        token.literal,
-        token.offset,
+        position: token.position,
       ) unless token.token == type || token.literal == literal
 
-      token.offset.tap { next_token }
+      token.position.tap { next_token }
     end
 
     sig { returns(Lexer::Token) }
@@ -47,7 +46,7 @@ module Minic
 
     sig { returns(AbstractSyntaxTree::Program) }
     def parse_program
-      program = AbstractSyntaxTree::Program.new
+      program = AbstractSyntaxTree::Program.new(position: @lexer.file.position(0))
 
       program << parse_declarations until @lexer.eof?
 
@@ -67,21 +66,21 @@ module Minic
     sig { returns(AbstractSyntaxTree::Keyword) }
     def parse_keyword
       literal = token.literal
-      offset = token.offset
+      position = token.position
 
       expect(:Keyword)
 
-      AbstractSyntaxTree::Keyword.new(literal:, offset:)
+      AbstractSyntaxTree::Keyword.new(literal:, position:)
     end
 
     sig { returns(AbstractSyntaxTree::Identifier) }
     def parse_identifier
       literal = token.literal
-      offset = token.offset
+      position = token.position
 
       expect(:Identifier)
 
-      AbstractSyntaxTree::Identifier.new(literal:, offset:)
+      AbstractSyntaxTree::Identifier.new(literal:, position:)
     end
 
     sig { returns(T.nilable(AbstractSyntaxTree::Expression)) }
@@ -111,36 +110,36 @@ module Minic
     sig { params(lhs: AbstractSyntaxTree::Expression).returns(AbstractSyntaxTree::BinaryExpression) }
     def parse_binary(lhs:)
       literal = token.literal
-      offset = token.offset
+      position = token.position
 
       next_token
 
       rhs = parse_expression
 
-      AbstractSyntaxTree::BinaryExpression.new(literal:, offset:, lhs:, rhs:)
+      AbstractSyntaxTree::BinaryExpression.new(literal:, position:, lhs:, rhs:)
     end
 
     sig { returns(AbstractSyntaxTree::SimpleExpression) }
     def parse_simple
       literal = token.literal
-      offset = token.offset
+      position = token.position
       type = token.token
 
       next_token
 
       case type
       when :Boolean
-        AbstractSyntaxTree::BooleanLiteral.new(literal:, offset:)
+        AbstractSyntaxTree::BooleanLiteral.new(literal:, position:)
       when :Double
-        AbstractSyntaxTree::DoubleLiteral.new(literal:, offset:)
+        AbstractSyntaxTree::DoubleLiteral.new(literal:, position:)
       when :Integer
-        AbstractSyntaxTree::IntegerLiteral.new(literal:, offset:)
+        AbstractSyntaxTree::IntegerLiteral.new(literal:, position:)
       when :String
-        AbstractSyntaxTree::StringLiteral.new(literal:, offset:)
+        AbstractSyntaxTree::StringLiteral.new(literal:, position:)
       when :Identifier
-        AbstractSyntaxTree::Identifier.new(literal:, offset:)
+        AbstractSyntaxTree::Identifier.new(literal:, position:)
       else
-        raise UnexpectedTokenError.new("expected expression", literal, offset)
+        raise UnexpectedTokenError.new("expected expression", literal, position:)
       end
     end
 
@@ -180,12 +179,12 @@ module Minic
     sig { returns(AbstractSyntaxTree::UnaryExpression) }
     def parse_unary
       literal = token.literal
-      offset = token.offset
+      position = token.position
       next_token
 
       expression = parse_expression
 
-      AbstractSyntaxTree::UnaryExpression.new(literal:, offset:, expression:)
+      AbstractSyntaxTree::UnaryExpression.new(literal:, position:, expression:)
     end
 
     sig do
@@ -274,25 +273,24 @@ module Minic
         return parse_assignment_statement(identifier) if any?(:Equal)
         return parse_function_call(identifier) if any?(:LeftParen)
 
-        raise UnexpectedTokenError.new("unexpected token", token.literal, token.offset)
+        raise UnexpectedTokenError.new("unexpected token", token.literal, position: token.position)
       end
 
-      raise UnexpectedTokenError.new("expected statement", token.literal, token.offset)
+      raise UnexpectedTokenError.new("expected statement", token.literal, position: token.position)
     end
 
     sig { params(lhs: AbstractSyntaxTree::Identifier).returns(AbstractSyntaxTree::AssignmentStatement) }
     def parse_assignment_statement(lhs)
-      literal = token.literal
-      offset = expect(:Equal)
+      equal_pos = expect(:Equal)
 
       rhs = parse_expression
 
-      AbstractSyntaxTree::AssignmentStatement.new(literal:, offset:, lhs:, rhs:)
+      AbstractSyntaxTree::AssignmentStatement.new(equal_pos:, lhs:, rhs:)
     end
 
     sig { returns(AbstractSyntaxTree::IfStatement) }
     def parse_if
-      offset = expect(:Keyword, "if")
+      if_pos = expect(:Keyword, "if")
 
       conditional = parse_conditional
       then_block = parse_block
@@ -302,26 +300,26 @@ module Minic
         else_block = parse_block
       end
 
-      AbstractSyntaxTree::IfStatement.new(offset:, conditional:, then_block:, else_block:)
+      AbstractSyntaxTree::IfStatement.new(if_pos:, conditional:, then_block:, else_block:)
     end
 
     sig { returns(AbstractSyntaxTree::ReturnStatement) }
     def parse_return
-      offset = expect(:Keyword, "return")
+      return_pos = expect(:Keyword, "return")
 
       expression = parse_expression unless any?(:SemiColon) # rubocop:disable Style/InvertibleUnlessCondition
 
-      AbstractSyntaxTree::ReturnStatement.new(literal: "return", offset:, expression:)
+      AbstractSyntaxTree::ReturnStatement.new(return_pos:, expression:)
     end
 
     sig { returns(AbstractSyntaxTree::WhileStatement) }
     def parse_while
-      offset = expect(:Keyword, "while")
+      while_pos = expect(:Keyword, "while")
 
       conditional = parse_conditional
       block = parse_block
 
-      AbstractSyntaxTree::WhileStatement.new(offset:, conditional:, block:)
+      AbstractSyntaxTree::WhileStatement.new(while_pos:, conditional:, block:)
     end
 
     sig { returns(AbstractSyntaxTree::Expression) }

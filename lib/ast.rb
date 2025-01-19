@@ -2,6 +2,7 @@
 # frozen_string_literal: true
 
 require_relative "ast/node"
+require_relative "ast/base_literal"
 require_relative "ast/boolean_literal"
 require_relative "ast/double_literal"
 require_relative "ast/integer_literal"

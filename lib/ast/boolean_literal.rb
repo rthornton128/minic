@@ -3,7 +3,7 @@
 
 module Minic
   class AbstractSyntaxTree
-    class BooleanLiteral < Node
+    class BooleanLiteral < BaseLiteral
     end
   end
 end

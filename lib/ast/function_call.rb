@@ -3,10 +3,10 @@
 
 module Minic
   class AbstractSyntaxTree
-    class FunctionCall < Node
+    class FunctionCall
+      include Node
       sig { params(identifier: Identifier, arguments: T::Array[Expression]).void }
       def initialize(identifier:, arguments:)
-        super()
         @identifier = identifier
         @arguments = arguments
       end
@@ -17,7 +17,12 @@ module Minic
       sig { returns(T::Array[Expression]) }
       attr_reader :arguments
 
-      sig { params(block: T.proc.params(node: Node).void).void }
+      sig { override.returns(FileSet::Position) }
+      def position
+        @identifier.position
+      end
+
+      sig { override.params(block: T.proc.params(node: Node).void).void }
       def walk(&block)
         yield(@identifier)
         @identifier.walk(&block)
