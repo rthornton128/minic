@@ -221,8 +221,6 @@ module Minic
     test "returns all tokens for function" do
       lexer = Lexer.new(file: FileSet::File.new(body: "int add(int a, int b) {\n\treturn a + b;\n}"))
 
-      # TODO: The columns for rows 2 and 3 are likely wrong. They
-      # seem off by one
       expected_tokens = [
         [:Keyword, "int", 1, 1],
         [:Identifier, "add", 1, 5],
@@ -234,12 +232,12 @@ module Minic
         [:Identifier, "b", 1, 20],
         [:RightParen, ")", 1, 21],
         [:LeftBrace, "{", 1, 23],
-        [:Keyword, "return", 2, 3],
-        [:Identifier, "a", 2, 10],
-        [:Plus, "+", 2, 12],
-        [:Identifier, "b", 2, 14],
-        [:SemiColon, ";", 2, 15],
-        [:RightBrace, "}", 3, 2],
+        [:Keyword, "return", 2, 2],
+        [:Identifier, "a", 2, 9],
+        [:Plus, "+", 2, 11],
+        [:Identifier, "b", 2, 13],
+        [:SemiColon, ";", 2, 14],
+        [:RightBrace, "}", 3, 1],
       ]
 
       expected_tokens.each do |expected_token|
@@ -247,8 +245,8 @@ module Minic
 
         assert_equal(expected_token[0], token.token)
         assert_equal(expected_token[1], token.literal)
-        assert_equal(expected_token[2], token.position.row)
-        assert_equal(expected_token[3], token.position.column)
+        assert_equal(expected_token[2], token.position.row, "Row should match")
+        assert_equal(expected_token[3], token.position.column, "Column should match")
       end
 
       token = lexer.scan
