@@ -11,6 +11,12 @@ module Minic
         @identifier = identifier
       end
 
+      sig { returns(Keyword) }
+      attr_reader :type
+
+      sig { returns(Identifier) }
+      attr_reader :identifier
+
       sig { override.params(block: T.proc.params(node: Node).void).void }
       def walk(&block)
         yield(@type)

@@ -10,6 +10,9 @@ module Minic
         @expression = expression
       end
 
+      sig { returns(T.nilable(Expression)) }
+      attr_reader :expression
+
       sig { params(block: T.proc.params(node: Node).void).void }
       def walk(&block)
         return if @expression.nil?

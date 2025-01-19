@@ -4,6 +4,9 @@
 module Minic
   class AbstractSyntaxTree
     class Program < Node
+      sig { returns(T::Array[Declaration]) }
+      attr_reader :declarations
+
       sig { params(literal: String, offset: Integer).void }
       def initialize(literal: "", offset: 0)
         super

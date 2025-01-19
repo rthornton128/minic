@@ -11,6 +11,12 @@ module Minic
         @arguments = arguments
       end
 
+      sig { returns(Identifier) }
+      attr_reader :identifier
+
+      sig { returns(T::Array[Expression]) }
+      attr_reader :arguments
+
       sig { params(block: T.proc.params(node: Node).void).void }
       def walk(&block)
         yield(@identifier)

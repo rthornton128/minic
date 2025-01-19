@@ -8,15 +8,27 @@ module Minic
       def initialize(type:, identifier:, parameter_list:, block:)
         super()
         @type = type
-        @identifer = identifier
+        @identifier = identifier
         @parameter_list = parameter_list
         @block = block
       end
 
+      sig { returns(Keyword) }
+      attr_reader :type
+
+      sig { returns(Identifier) }
+      attr_reader :identifier
+
+      sig { returns(ParameterList) }
+      attr_reader :parameter_list
+
+      sig { returns(Block) }
+      attr_reader :block
+
       sig { params(block: T.proc.params(node: Node).void).void }
       def walk(&block)
         yield(@type)
-        yield(@identifer)
+        yield(@identifier)
 
         yield(@parameter_list)
         @parameter_list.walk(&block)

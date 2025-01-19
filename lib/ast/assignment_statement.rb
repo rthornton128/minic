@@ -11,6 +11,12 @@ module Minic
         @rhs = rhs
       end
 
+      sig { returns(Identifier) }
+      attr_reader :lhs
+
+      sig { returns(Expression) }
+      attr_reader :rhs
+
       sig { params(block: T.proc.params(node: Node).void).void }
       def walk(&block)
         yield(@lhs)

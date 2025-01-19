@@ -4,7 +4,19 @@
 module Minic
   class Lexer
     class Token
-      OPERATORS = [:Plus, :Minus, :Star, :FowardSlash, :Exclamation].freeze
+      OPERATORS = [
+        :Plus,
+        :Minus,
+        :Star,
+        :ForwardSlash,
+        :Exclamation,
+        :Percent,
+        :And,
+        :Or,
+        :Equality,
+        :LessThan,
+        :GreaterThan,
+      ].freeze
 
       sig { returns(Symbol) }
       attr_reader :token

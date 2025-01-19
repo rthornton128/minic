@@ -34,7 +34,7 @@ module Minic
     Statement = T.type_alias { T.any(AssignmentStatement, IfStatement, ReturnStatement, WhileStatement, FunctionCall) }
 
     sig { returns(Program) }
-    attr_accessor :program
+    attr_reader :program
 
     sig { params(program: Program).void }
     def initialize(program:)

@@ -33,6 +33,7 @@ module Minic
         "/" => :ForwardSlash,
         "!" => :Exclamation,
         "+" => :Plus,
+        "-" => :Minus,
         "*" => :Star,
         "%" => :Percent,
         "&&" => :And,
@@ -194,7 +195,7 @@ module Minic
 
       if SYMBOLS.keys.include?(literal + next_char)
         literal += next_char
-        accept
+        advance
       end
 
       Token.new(token: T.must(SYMBOLS[literal]), literal:, offset:).tap { advance }
