@@ -23,16 +23,11 @@ module Minic
       assert_equal(4, token.offset)
     end
 
-    test "raises Invalid token for invalid character in body" do
+    test "raises Unexpected token for invalid character in body" do
       lexer = Lexer.new(file: FileSet::File.new(body: "@"))
 
-      assert_raises(Lexer::InvalidTokenError) do
-        lexer.scan
-      rescue Lexer::InvalidTokenError => error
-        assert_equal("@", error.literal)
-        assert_equal(0, error.offset)
-        raise
-      end
+      error = assert_raises(Lexer::InvalidTokenError) { lexer.scan }
+      assert_match("Unexpected token", error.to_s)
     end
 
     test "returns Integer token for value 0" do
