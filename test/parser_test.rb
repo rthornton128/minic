@@ -334,6 +334,35 @@ module Minic
       assert_equal(expected.size, index, "Number of nodes must match")
     end
 
+    test "parse variable declaration in simple function call block" do
+      file = FileSet::File.new(body: "void main() { int a; }")
+      lexer = Lexer.new(file:)
+      parser = Parser.new(lexer:)
+
+      ast = parser.parse
+
+      type = AbstractSyntaxTree::Keyword.new(literal: "int", offset: 14)
+      identifier = AbstractSyntaxTree::Identifier.new(literal: "a", offset: 18)
+      var_decl = AbstractSyntaxTree::VariableDeclaration.new(type:, identifier:)
+
+      expected = [var_decl, type, identifier]
+
+      ast = find_node(klass: AbstractSyntaxTree::Block, ast:)
+      refute_nil(ast)
+
+      index = 0
+      T.must(ast).walk do |node|
+        expect = T.must(expected[index])
+
+        assert_instance_of(expect.class, node)
+        assert_equal(expect.literal, node.literal)
+        assert_equal(expect.offset, node.offset)
+        assert_equal(expect.length, node.length)
+        index += 1
+      end
+
+      assert_equal(expected.size, index, "Number of nodes must match")
+    end
     test "parse function declaration with empty parameters and empty block" do
       file = FileSet::File.new(body: "int main() {}")
       lexer = Lexer.new(file:)

@@ -58,13 +58,10 @@ module Minic
     def parse_declarations
       type = parse_keyword
       identifier = parse_identifier
-      assignment = parse_assignment if any?(:Equal)
 
       return parse_function_decl(type, identifier) if any?(:LeftParen)
 
-      expect(:SemiColon)
-
-      AbstractSyntaxTree::VariableDeclaration.new(type:, identifier:, assignment:)
+      parse_variable_decl(type, identifier).tap { expect(:SemiColon) }
     end
 
     sig { returns(AbstractSyntaxTree::Keyword) }
@@ -195,6 +192,18 @@ module Minic
       params(
         type: AbstractSyntaxTree::Keyword,
         identifier: AbstractSyntaxTree::Identifier,
+      ).returns(AbstractSyntaxTree::VariableDeclaration)
+    end
+    def parse_variable_decl(type, identifier)
+      assignment = parse_assignment if any?(:Equal)
+
+      AbstractSyntaxTree::VariableDeclaration.new(type:, identifier:, assignment:)
+    end
+
+    sig do
+      params(
+        type: AbstractSyntaxTree::Keyword,
+        identifier: AbstractSyntaxTree::Identifier,
       ).returns(AbstractSyntaxTree::FunctionDeclaration)
     end
     def parse_function_decl(type, identifier)
@@ -251,6 +260,13 @@ module Minic
         return parse_return
       when "while"
         return parse_while
+      end
+
+      if token.token == :Keyword
+        type = parse_keyword
+        identifier = parse_identifier
+
+        return parse_variable_decl(type, identifier)
       end
 
       if token.token == :Identifier

@@ -254,15 +254,15 @@ module Minic
     end
 
     # parser error that there's no statement. expr_decl not a statement?
-    # test "function declaration with block not ending with return will raise error" do
-    #   file = FileSet::File.new(body: "void main() { int a; }")
-    #   lexer = Lexer.new(file:)
-    #   parser = Parser.new(lexer:)
-    #   ast = parser.parse
+    test "function declaration with block not ending with return will raise error" do
+      file = FileSet::File.new(body: "void main() { int a; }")
+      lexer = Lexer.new(file:)
+      parser = Parser.new(lexer:)
+      ast = parser.parse
 
-    #   error = assert_raises(SemanticAnalyzer::Error) { SemanticAnalyzer.new(ast:).check }
-    #   assert_equal("function block must end with a return statement", error.message)
-    # end
+      error = assert_raises(SemanticAnalyzer::Error) { SemanticAnalyzer.new(ast:).check }
+      assert_equal("function block must end with a return statement", error.message)
+    end
 
     test "return statement with expression that references parameters passes" do
       file = FileSet::File.new(body: "int add(int a, int b) { return a + b; }")
