@@ -3,7 +3,7 @@
 
 module Minic
   class AbstractSyntaxTree
-    class Identifier
+    class BaseLiteral
       include Node
 
       sig { params(literal: String, position: FileSet::Position).void }
@@ -20,13 +20,6 @@ module Minic
 
       sig { override.params(block: T.proc.params(node: Node).void).void }
       def walk(&block); end
-
-      class << self
-        sig { params(token: Lexer::Token).returns(T.attached_class) }
-        def from(token)
-          new(literal: token.literal, position: token.position)
-        end
-      end
     end
   end
 end

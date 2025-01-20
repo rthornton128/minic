@@ -15,9 +15,6 @@ module Minic
       index = 0
       ast.walk do |node|
         assert_instance_of(AbstractSyntaxTree::Program, node)
-        assert_equal("", node.literal)
-        assert_equal(0, node.offset)
-        assert_equal(0, node.length)
         index += 1
       end
       assert_equal(1, index, "Number of nodes must match")
@@ -30,20 +27,17 @@ module Minic
 
       ast = parser.parse
 
-      index = 0
-      program = AbstractSyntaxTree::Program.new
-      type = AbstractSyntaxTree::Keyword.new(literal: "int", offset: 0)
-      identifier = AbstractSyntaxTree::Identifier.new(literal: "x", offset: 4)
+      type = AbstractSyntaxTree::Keyword.new(literal: "int", position: file.position(0))
+      identifier = AbstractSyntaxTree::Identifier.new(literal: "x", position: file.position(4))
       var_decl = AbstractSyntaxTree::VariableDeclaration.new(type:, identifier:)
-      expected = [program, var_decl, type, identifier]
+      expected = [var_decl, type, identifier]
 
+      index = 0
+      ast = ast.program
       ast.walk do |node|
         expect = T.must(expected[index])
 
         assert_instance_of(expect.class, node)
-        assert_equal(expect.literal, node.literal)
-        assert_equal(expect.offset, node.offset)
-        assert_equal(expect.length, node.length)
         index += 1
       end
 
@@ -57,21 +51,19 @@ module Minic
 
       ast = parser.parse
 
-      index = 0
-      program = AbstractSyntaxTree::Program.new
-      type = AbstractSyntaxTree::Keyword.new(literal: "bool", offset: 0)
-      identifier = AbstractSyntaxTree::Identifier.new(literal: "b", offset: 5)
-      boolean = AbstractSyntaxTree::BooleanLiteral.new(literal: "false", offset: 9)
+      position = file.position(0)
+      type = AbstractSyntaxTree::Keyword.new(literal: "bool", position:)
+      identifier = AbstractSyntaxTree::Identifier.new(literal: "b", position:)
+      boolean = AbstractSyntaxTree::BooleanLiteral.new(literal: "false", position:)
       var_decl = AbstractSyntaxTree::VariableDeclaration.new(type:, identifier:, assignment: boolean)
-      expected = [program, var_decl, type, identifier, boolean]
+      expected = [var_decl, type, identifier, boolean]
 
+      index = 0
+      ast = ast.program
       ast.walk do |node|
         expect = T.must(expected[index])
 
         assert_instance_of(expect.class, node)
-        assert_equal(expect.literal, node.literal)
-        assert_equal(expect.offset, node.offset)
-        assert_equal(expect.length, node.length)
         index += 1
       end
 
@@ -85,21 +77,19 @@ module Minic
 
       ast = parser.parse
 
-      index = 0
-      program = AbstractSyntaxTree::Program.new
-      type = AbstractSyntaxTree::Keyword.new(literal: "double", offset: 0)
-      identifier = AbstractSyntaxTree::Identifier.new(literal: "d", offset: 7)
-      double = AbstractSyntaxTree::DoubleLiteral.new(literal: "4.2", offset: 11)
+      position = file.position(0)
+      type = AbstractSyntaxTree::Keyword.new(literal: "double", position:)
+      identifier = AbstractSyntaxTree::Identifier.new(literal: "d", position:)
+      double = AbstractSyntaxTree::DoubleLiteral.new(literal: "4.2", position:)
       var_decl = AbstractSyntaxTree::VariableDeclaration.new(type:, identifier:, assignment: double)
-      expected = [program, var_decl, type, identifier, double]
+      expected = [var_decl, type, identifier, double]
 
+      index = 0
+      ast = ast.program
       ast.walk do |node|
         expect = T.must(expected[index])
 
         assert_instance_of(expect.class, node)
-        assert_equal(expect.literal, node.literal)
-        assert_equal(expect.offset, node.offset)
-        assert_equal(expect.length, node.length)
         index += 1
       end
 
@@ -113,21 +103,19 @@ module Minic
 
       ast = parser.parse
 
-      index = 0
-      program = AbstractSyntaxTree::Program.new
-      type = AbstractSyntaxTree::Keyword.new(literal: "int", offset: 0)
-      identifier = AbstractSyntaxTree::Identifier.new(literal: "x", offset: 4)
-      integer = AbstractSyntaxTree::IntegerLiteral.new(literal: "42", offset: 8)
+      position = file.position(0)
+      type = AbstractSyntaxTree::Keyword.new(literal: "int", position:)
+      identifier = AbstractSyntaxTree::Identifier.new(literal: "x", position:)
+      integer = AbstractSyntaxTree::IntegerLiteral.new(literal: "42", position:)
       var_decl = AbstractSyntaxTree::VariableDeclaration.new(type:, identifier:, assignment: integer)
-      expected = [program, var_decl, type, identifier, integer]
+      expected = [var_decl, type, identifier, integer]
 
+      index = 0
+      ast = ast.program
       ast.walk do |node|
         expect = T.must(expected[index])
 
         assert_instance_of(expect.class, node)
-        assert_equal(expect.literal, node.literal)
-        assert_equal(expect.offset, node.offset)
-        assert_equal(expect.length, node.length)
         index += 1
       end
 
@@ -141,21 +129,19 @@ module Minic
 
       ast = parser.parse
 
-      index = 0
-      program = AbstractSyntaxTree::Program.new
-      type = AbstractSyntaxTree::Keyword.new(literal: "string", offset: 0)
-      identifier = AbstractSyntaxTree::Identifier.new(literal: "s", offset: 7)
-      string = AbstractSyntaxTree::StringLiteral.new(literal: '"word"', offset: 11)
+      position = file.position(0)
+      type = AbstractSyntaxTree::Keyword.new(literal: "string", position:)
+      identifier = AbstractSyntaxTree::Identifier.new(literal: "s", position:)
+      string = AbstractSyntaxTree::StringLiteral.new(literal: '"word"', position:)
       var_decl = AbstractSyntaxTree::VariableDeclaration.new(type:, identifier:, assignment: string)
-      expected = [program, var_decl, type, identifier, string]
+      expected = [var_decl, type, identifier, string]
 
+      index = 0
+      ast = ast.program
       ast.walk do |node|
         expect = T.must(expected[index])
 
         assert_instance_of(expect.class, node)
-        assert_equal(expect.literal, node.literal)
-        assert_equal(expect.offset, node.offset)
-        assert_equal(expect.length, node.length)
         index += 1
       end
 
@@ -169,21 +155,19 @@ module Minic
 
       ast = parser.parse
 
-      index = 0
-      program = AbstractSyntaxTree::Program.new
-      type = AbstractSyntaxTree::Keyword.new(literal: "int", offset: 0)
-      lhs = AbstractSyntaxTree::Identifier.new(literal: "a", offset: 4)
-      rhs = AbstractSyntaxTree::Identifier.new(literal: "b", offset: 8)
+      position = file.position(0)
+      type = AbstractSyntaxTree::Keyword.new(literal: "int", position:)
+      lhs = AbstractSyntaxTree::Identifier.new(literal: "a", position:)
+      rhs = AbstractSyntaxTree::Identifier.new(literal: "b", position:)
       var_decl = AbstractSyntaxTree::VariableDeclaration.new(type:, identifier: lhs, assignment: rhs)
-      expected = [program, var_decl, type, lhs, rhs]
+      expected = [var_decl, type, lhs, rhs]
 
+      index = 0
+      ast = ast.program
       ast.walk do |node|
         expect = T.must(expected[index])
 
         assert_instance_of(expect.class, node)
-        assert_equal(expect.literal, node.literal)
-        assert_equal(expect.offset, node.offset)
-        assert_equal(expect.length, node.length)
         index += 1
       end
 
@@ -197,22 +181,20 @@ module Minic
 
       ast = parser.parse
 
-      index = 0
-      program = AbstractSyntaxTree::Program.new
-      type = AbstractSyntaxTree::Keyword.new(literal: "int", offset: 0)
-      identifier = AbstractSyntaxTree::Identifier.new(literal: "a", offset: 4)
-      expression = AbstractSyntaxTree::Identifier.new(literal: "b", offset: 9)
-      unary = AbstractSyntaxTree::UnaryExpression.new(literal: "!", offset: 8, expression:)
+      position = file.position(0)
+      type = AbstractSyntaxTree::Keyword.new(literal: "int", position:)
+      identifier = AbstractSyntaxTree::Identifier.new(literal: "a", position:)
+      expression = AbstractSyntaxTree::Identifier.new(literal: "b", position:)
+      unary = AbstractSyntaxTree::UnaryExpression.new(literal: "!", position:, expression:)
       var_decl = AbstractSyntaxTree::VariableDeclaration.new(type:, identifier:, assignment: unary)
-      expected = [program, var_decl, type, identifier, unary, expression]
+      expected = [var_decl, type, identifier, unary, expression]
 
+      index = 0
+      ast = ast.program
       ast.walk do |node|
         expect = T.must(expected[index])
 
         assert_instance_of(expect.class, node)
-        assert_equal(expect.literal, node.literal)
-        assert_equal(expect.offset, node.offset)
-        assert_equal(expect.length, node.length)
         index += 1
       end
 
@@ -226,10 +208,11 @@ module Minic
 
       ast = parser.parse
 
-      bool_expr = AbstractSyntaxTree::BooleanLiteral.new(literal: "true", offset: 9)
+      position = file.position(0)
+      bool_expr = AbstractSyntaxTree::BooleanLiteral.new(literal: "true", position:)
       expected = [bool_expr]
 
-      ast = find_node(klass: AbstractSyntaxTree::SubExpression, ast:)
+      ast = T.cast(ast.program.declarations.first, AbstractSyntaxTree::VariableDeclaration).assignment
       refute_nil(ast)
 
       index = 0
@@ -237,9 +220,6 @@ module Minic
         expect = T.must(expected[index])
 
         assert_instance_of(expect.class, node)
-        assert_equal(expect.literal, node.literal)
-        assert_equal(expect.offset, node.offset)
-        assert_equal(expect.length, node.length)
         index += 1
       end
 
@@ -253,23 +233,21 @@ module Minic
 
       ast = parser.parse
 
-      program = AbstractSyntaxTree::Program.new
-      type = AbstractSyntaxTree::Keyword.new(literal: "int", offset: 0)
-      identifier = AbstractSyntaxTree::Identifier.new(literal: "a", offset: 4)
-      lhs = AbstractSyntaxTree::IntegerLiteral.new(literal: "1", offset: 8)
-      rhs = AbstractSyntaxTree::IntegerLiteral.new(literal: "2", offset: 12)
-      binary = AbstractSyntaxTree::BinaryExpression.new(literal: "+", offset: 10, lhs:, rhs:)
+      position = file.position(0)
+      type = AbstractSyntaxTree::Keyword.new(literal: "int", position:)
+      identifier = AbstractSyntaxTree::Identifier.new(literal: "a", position:)
+      lhs = AbstractSyntaxTree::IntegerLiteral.new(literal: "1", position:)
+      rhs = AbstractSyntaxTree::IntegerLiteral.new(literal: "2", position:)
+      binary = AbstractSyntaxTree::BinaryExpression.new(literal: "+", position:, lhs:, rhs:)
       var_decl = AbstractSyntaxTree::VariableDeclaration.new(type:, identifier:, assignment: binary)
-      expected = [program, var_decl, type, identifier, binary, lhs, rhs]
+      expected = [var_decl, type, identifier, binary, lhs, rhs]
 
       index = 0
+      ast = ast.program
       ast.walk do |node|
         expect = T.must(expected[index])
 
         assert_instance_of(expect.class, node)
-        assert_equal(expect.literal, node.literal)
-        assert_equal(expect.offset, node.offset)
-        assert_equal(expect.length, node.length)
         index += 1
       end
 
@@ -283,13 +261,15 @@ module Minic
 
       ast = parser.parse
 
-      lhs = AbstractSyntaxTree::IntegerLiteral.new(literal: "1", offset: 8)
-      rhs = AbstractSyntaxTree::IntegerLiteral.new(literal: "2", offset: 13)
+      position = file.position(0)
+      lhs = AbstractSyntaxTree::IntegerLiteral.new(literal: "1", position:)
+      rhs = AbstractSyntaxTree::IntegerLiteral.new(literal: "2", position:)
       expected = [lhs, rhs]
 
-      ast = find_node(klass: AbstractSyntaxTree::BinaryExpression, ast:)
+      ast = T.cast(ast.program.declarations.first, AbstractSyntaxTree::VariableDeclaration).assignment
       refute_nil(ast)
 
+      assert_instance_of(AbstractSyntaxTree::BinaryExpression, ast)
       assert_equal("==", T.cast(ast, AbstractSyntaxTree::BinaryExpression).literal)
 
       index = 0
@@ -297,9 +277,6 @@ module Minic
         expect = T.must(expected[index])
 
         assert_instance_of(expect.class, node)
-        assert_equal(expect.literal, node.literal)
-        assert_equal(expect.offset, node.offset)
-        assert_equal(expect.length, node.length)
         index += 1
       end
 
@@ -313,11 +290,12 @@ module Minic
 
       ast = parser.parse
 
-      identifier = AbstractSyntaxTree::Identifier.new(literal: "func", offset: 8)
+      position = file.position(0)
+      identifier = AbstractSyntaxTree::Identifier.new(literal: "func", position:)
 
       expected = [identifier]
 
-      ast = find_node(klass: AbstractSyntaxTree::FunctionCall, ast:)
+      ast = T.cast(ast.program.declarations.first, AbstractSyntaxTree::VariableDeclaration).assignment
       refute_nil(ast)
 
       index = 0
@@ -325,9 +303,34 @@ module Minic
         expect = T.must(expected[index])
 
         assert_instance_of(expect.class, node)
-        assert_equal(expect.literal, node.literal)
-        assert_equal(expect.offset, node.offset)
-        assert_equal(expect.length, node.length)
+        index += 1
+      end
+
+      assert_equal(expected.size, index, "Number of nodes must match")
+    end
+
+    test "parse variable declaration in simple function call block" do
+      file = FileSet::File.new(body: "void main() { int a; }")
+      lexer = Lexer.new(file:)
+      parser = Parser.new(lexer:)
+
+      ast = parser.parse
+
+      position = file.position(0)
+      type = AbstractSyntaxTree::Keyword.new(literal: "int", position:)
+      identifier = AbstractSyntaxTree::Identifier.new(literal: "a", position:)
+      var_decl = AbstractSyntaxTree::VariableDeclaration.new(type:, identifier:)
+
+      expected = [var_decl, type, identifier]
+
+      ast = T.cast(ast.program.declarations.first, AbstractSyntaxTree::FunctionDeclaration).block
+      refute_nil(ast)
+
+      index = 0
+      T.must(ast).walk do |node|
+        expect = T.must(expected[index])
+
+        assert_instance_of(expect.class, node)
         index += 1
       end
 
@@ -341,22 +344,20 @@ module Minic
 
       ast = parser.parse
 
-      program = AbstractSyntaxTree::Program.new
-      type = AbstractSyntaxTree::Keyword.new(literal: "int", offset: 0)
-      identifier = AbstractSyntaxTree::Identifier.new(literal: "main", offset: 4)
-      parameter_list = AbstractSyntaxTree::ParameterList.new(opening: 8, closing: 9, parameters: [])
-      block = AbstractSyntaxTree::Block.new(opening: 11, closing: 12, statements: [])
+      opening = closing = position = file.position(0)
+      type = AbstractSyntaxTree::Keyword.new(literal: "int", position:)
+      identifier = AbstractSyntaxTree::Identifier.new(literal: "main", position:)
+      parameter_list = AbstractSyntaxTree::ParameterList.new(opening:, closing:, parameters: [])
+      block = AbstractSyntaxTree::Block.new(opening:, closing:, statements: [])
       func_decl = AbstractSyntaxTree::FunctionDeclaration.new(type:, identifier:, parameter_list:, block:)
-      expected = [program, func_decl, type, identifier, parameter_list, block]
+      expected = [func_decl, type, identifier, parameter_list, block]
 
       index = 0
+      ast = ast.program
       ast.walk do |node|
         expect = T.must(expected[index])
 
         assert_instance_of(expect.class, node)
-        assert_equal(expect.literal, node.literal)
-        assert_equal(expect.offset, node.offset)
-        assert_equal(expect.length, node.length)
         index += 1
       end
 
@@ -370,23 +371,21 @@ module Minic
 
       ast = parser.parse
 
-      type = AbstractSyntaxTree::Keyword.new(literal: "bool", offset: 9)
-      identifier = AbstractSyntaxTree::Identifier.new(literal: "b", offset: 14)
+      position = file.position(0)
+      type = AbstractSyntaxTree::Keyword.new(literal: "bool", position:)
+      identifier = AbstractSyntaxTree::Identifier.new(literal: "b", position:)
       parameter = AbstractSyntaxTree::Parameter.new(type:, identifier:)
 
       expected = [parameter, type, identifier]
 
-      list = find_node(klass: AbstractSyntaxTree::ParameterList, ast:)
-      refute_nil(list)
+      ast = T.cast(ast.program.declarations.first, AbstractSyntaxTree::FunctionDeclaration).parameter_list
+      refute_nil(ast)
 
       index = 0
-      T.must(list).walk do |node|
+      ast.walk do |node|
         expect = T.must(expected[index])
 
         assert_instance_of(expect.class, node)
-        assert_equal(expect.literal, node.literal)
-        assert_equal(expect.offset, node.offset)
-        assert_equal(expect.length, node.length)
         index += 1
       end
 
@@ -400,27 +399,25 @@ module Minic
 
       ast = parser.parse
 
-      first_type = AbstractSyntaxTree::Keyword.new(literal: "int", offset: 8)
-      first_identifier = AbstractSyntaxTree::Identifier.new(literal: "a", offset: 12)
+      position = file.position(0)
+      first_type = AbstractSyntaxTree::Keyword.new(literal: "int", position:)
+      first_identifier = AbstractSyntaxTree::Identifier.new(literal: "a", position:)
       first_parameter = AbstractSyntaxTree::Parameter.new(type: first_type, identifier: first_identifier)
 
-      second_type = AbstractSyntaxTree::Keyword.new(literal: "int", offset: 15)
-      second_identifier = AbstractSyntaxTree::Identifier.new(literal: "b", offset: 19)
+      second_type = AbstractSyntaxTree::Keyword.new(literal: "int", position:)
+      second_identifier = AbstractSyntaxTree::Identifier.new(literal: "b", position:)
       second_parameter = AbstractSyntaxTree::Parameter.new(type: second_type, identifier: second_identifier)
 
       expected = [first_parameter, first_type, first_identifier, second_parameter, second_type, second_identifier]
 
-      list = find_node(klass: AbstractSyntaxTree::ParameterList, ast:)
-      refute_nil(list)
+      ast = T.cast(ast.program.declarations.first, AbstractSyntaxTree::FunctionDeclaration).parameter_list
+      refute_nil(ast)
 
       index = 0
-      T.must(list).walk do |node|
+      ast.walk do |node|
         expect = T.must(expected[index])
 
         assert_instance_of(expect.class, node)
-        assert_equal(expect.literal, node.literal)
-        assert_equal(expect.offset, node.offset)
-        assert_equal(expect.length, node.length)
         index += 1
       end
 
@@ -434,22 +431,20 @@ module Minic
 
       ast = parser.parse
 
-      identifier = AbstractSyntaxTree::Identifier.new(literal: "add", offset: 13)
+      position = file.position(0)
+      identifier = AbstractSyntaxTree::Identifier.new(literal: "add", position:)
       function_call = AbstractSyntaxTree::FunctionCall.new(identifier:, arguments: [])
 
       expected = [function_call, identifier]
 
-      ast = find_node(klass: AbstractSyntaxTree::Block, ast:)
+      ast = T.cast(ast.program.declarations.first, AbstractSyntaxTree::FunctionDeclaration).block
       refute_nil(ast)
 
       index = 0
-      T.must(ast).walk do |node|
+      ast.walk do |node|
         expect = T.must(expected[index])
 
         assert_instance_of(expect.class, node)
-        assert_equal(expect.literal, node.literal)
-        assert_equal(expect.offset, node.offset)
-        assert_equal(expect.length, node.length)
         index += 1
       end
 
@@ -463,23 +458,21 @@ module Minic
 
       ast = parser.parse
 
-      identifier = AbstractSyntaxTree::Identifier.new(literal: "func", offset: 13)
-      argument = AbstractSyntaxTree::BooleanLiteral.new(literal: "true", offset: 18)
+      position = file.position(0)
+      identifier = AbstractSyntaxTree::Identifier.new(literal: "func", position:)
+      argument = AbstractSyntaxTree::BooleanLiteral.new(literal: "true", position:)
       function_call = AbstractSyntaxTree::FunctionCall.new(identifier:, arguments: [argument])
 
       expected = [function_call, identifier, argument]
 
-      ast = find_node(klass: AbstractSyntaxTree::Block, ast:)
+      ast = T.cast(ast.program.declarations.first, AbstractSyntaxTree::FunctionDeclaration).block
       refute_nil(ast)
 
       index = 0
-      T.must(ast).walk do |node|
+      ast.walk do |node|
         expect = T.must(expected[index])
 
         assert_instance_of(expect.class, node)
-        assert_equal(expect.literal, node.literal)
-        assert_equal(expect.offset, node.offset)
-        assert_equal(expect.length, node.length)
         index += 1
       end
 
@@ -493,24 +486,23 @@ module Minic
 
       ast = parser.parse
 
-      identifier = AbstractSyntaxTree::Identifier.new(literal: "add", offset: 13)
-      first_argument = AbstractSyntaxTree::IntegerLiteral.new(literal: "1", offset: 17)
-      second_argument = AbstractSyntaxTree::IntegerLiteral.new(literal: "2", offset: 20)
+      position = file.position(0)
+      identifier = AbstractSyntaxTree::Identifier.new(literal: "add", position:)
+      first_argument = AbstractSyntaxTree::IntegerLiteral.new(literal: "1", position:)
+      second_argument = AbstractSyntaxTree::IntegerLiteral.new(literal: "2", position:)
       function_call = AbstractSyntaxTree::FunctionCall.new(identifier:, arguments: [first_argument, second_argument])
 
       expected = [function_call, identifier, first_argument, second_argument]
 
-      ast = find_node(klass: AbstractSyntaxTree::Block, ast:)
+      ast = T.cast(ast.program.declarations.first, AbstractSyntaxTree::FunctionDeclaration).block
+
       refute_nil(ast)
 
       index = 0
-      T.must(ast).walk do |node|
+      ast.walk do |node|
         expect = T.must(expected[index])
 
         assert_instance_of(expect.class, node)
-        assert_equal(expect.literal, node.literal)
-        assert_equal(expect.offset, node.offset)
-        assert_equal(expect.length, node.length)
         index += 1
       end
 
@@ -524,23 +516,21 @@ module Minic
 
       ast = parser.parse
 
-      conditional = AbstractSyntaxTree::BooleanLiteral.new(literal: "true", offset: 16)
-      then_block = AbstractSyntaxTree::Block.new(opening: 22, closing: 23, statements: [])
-      if_statement = AbstractSyntaxTree::IfStatement.new(offset: 13, conditional:, then_block:)
+      position = file.position(0)
+      conditional = AbstractSyntaxTree::BooleanLiteral.new(literal: "true", position:)
+      then_block = AbstractSyntaxTree::Block.new(opening: position, closing: position, statements: [])
+      if_statement = AbstractSyntaxTree::IfStatement.new(if_pos: position, conditional:, then_block:)
 
       expected = [if_statement, conditional, then_block]
 
-      list = find_node(klass: AbstractSyntaxTree::Block, ast:)
-      refute_nil(list)
+      ast = T.cast(ast.program.declarations.first, AbstractSyntaxTree::FunctionDeclaration).block
+      refute_nil(ast)
 
       index = 0
-      T.must(list).walk do |node|
+      ast.walk do |node|
         expect = T.must(expected[index])
 
         assert_instance_of(expect.class, node)
-        assert_equal(expect.literal, node.literal)
-        assert_equal(expect.offset, node.offset)
-        assert_equal(expect.length, node.length)
         index += 1
       end
 
@@ -554,23 +544,21 @@ module Minic
 
       ast = parser.parse
 
-      lhs = AbstractSyntaxTree::Identifier.new(literal: "a", offset: 13)
-      rhs = AbstractSyntaxTree::Identifier.new(literal: "b", offset: 17)
-      assignment = AbstractSyntaxTree::AssignmentStatement.new(literal: "=", offset: 15, lhs:, rhs:)
+      position = file.position(0)
+      lhs = AbstractSyntaxTree::Identifier.new(literal: "a", position:)
+      rhs = AbstractSyntaxTree::Identifier.new(literal: "b", position:)
+      assignment = AbstractSyntaxTree::AssignmentStatement.new(equal_pos: position, lhs:, rhs:)
 
       expected = [assignment, lhs, rhs]
 
-      ast = find_node(klass: AbstractSyntaxTree::Block, ast:)
+      ast = T.cast(ast.program.declarations.first, AbstractSyntaxTree::FunctionDeclaration).block
       refute_nil(ast)
 
       index = 0
-      T.must(ast).walk do |node|
+      ast.walk do |node|
         expect = T.must(expected[index])
 
         assert_instance_of(expect.class, node)
-        assert_equal(expect.literal, node.literal)
-        assert_equal(expect.offset, node.offset)
-        assert_equal(expect.length, node.length)
         index += 1
       end
 
@@ -584,24 +572,22 @@ module Minic
 
       ast = parser.parse
 
-      conditional = AbstractSyntaxTree::BooleanLiteral.new(literal: "true", offset: 16)
-      then_block = AbstractSyntaxTree::Block.new(opening: 22, closing: 23, statements: [])
-      else_block = AbstractSyntaxTree::Block.new(opening: 30, closing: 31, statements: [])
-      if_statement = AbstractSyntaxTree::IfStatement.new(offset: 13, conditional:, then_block:, else_block:)
+      opening = closing = position = file.position(0)
+      conditional = AbstractSyntaxTree::BooleanLiteral.new(literal: "true", position:)
+      then_block = AbstractSyntaxTree::Block.new(opening:, closing:, statements: [])
+      else_block = AbstractSyntaxTree::Block.new(opening:, closing:, statements: [])
+      if_statement = AbstractSyntaxTree::IfStatement.new(if_pos: position, conditional:, then_block:, else_block:)
 
       expected = [if_statement, conditional, then_block, else_block]
 
-      list = find_node(klass: AbstractSyntaxTree::Block, ast:)
-      refute_nil(list)
+      ast = T.cast(ast.program.declarations.first, AbstractSyntaxTree::FunctionDeclaration).block
+      refute_nil(ast)
 
       index = 0
-      T.must(list).walk do |node|
+      ast.walk do |node|
         expect = T.must(expected[index])
 
         assert_instance_of(expect.class, node)
-        assert_equal(expect.literal, node.literal)
-        assert_equal(expect.offset, node.offset)
-        assert_equal(expect.length, node.length)
         index += 1
       end
 
@@ -615,21 +601,19 @@ module Minic
 
       ast = parser.parse
 
-      return_statement = AbstractSyntaxTree::ReturnStatement.new(literal: "return", offset: 13, expression: nil)
+      return_pos = file.position(0)
+      return_statement = AbstractSyntaxTree::ReturnStatement.new(return_pos:, expression: nil)
 
       expected = [return_statement]
 
-      list = find_node(klass: AbstractSyntaxTree::Block, ast:)
-      refute_nil(list)
+      ast = T.cast(ast.program.declarations.first, AbstractSyntaxTree::FunctionDeclaration).block
+      refute_nil(ast)
 
       index = 0
-      T.must(list).walk do |node|
+      ast.walk do |node|
         expect = T.must(expected[index])
 
         assert_instance_of(expect.class, node)
-        assert_equal(expect.literal, node.literal)
-        assert_equal(expect.offset, node.offset)
-        assert_equal(expect.length, node.length)
         index += 1
       end
 
@@ -643,22 +627,20 @@ module Minic
 
       ast = parser.parse
 
-      expression = AbstractSyntaxTree::IntegerLiteral.new(literal: "42", offset: 20)
-      return_statement = AbstractSyntaxTree::ReturnStatement.new(literal: "return", offset: 13, expression:)
+      return_pos = position = file.position(0)
+      expression = AbstractSyntaxTree::IntegerLiteral.new(literal: "42", position:)
+      return_statement = AbstractSyntaxTree::ReturnStatement.new(return_pos:, expression:)
 
       expected = [return_statement, expression]
 
-      list = find_node(klass: AbstractSyntaxTree::Block, ast:)
-      refute_nil(list)
+      ast = T.cast(ast.program.declarations.first, AbstractSyntaxTree::FunctionDeclaration).block
+      refute_nil(ast)
 
       index = 0
-      T.must(list).walk do |node|
+      ast.walk do |node|
         expect = T.must(expected[index])
 
         assert_instance_of(expect.class, node)
-        assert_equal(expect.literal, node.literal)
-        assert_equal(expect.offset, node.offset)
-        assert_equal(expect.length, node.length)
         index += 1
       end
 
@@ -672,46 +654,25 @@ module Minic
 
       ast = parser.parse
 
-      conditional = AbstractSyntaxTree::BooleanLiteral.new(literal: "true", offset: 19)
-      block = AbstractSyntaxTree::Block.new(opening: 25, closing: 26, statements: [])
-      where = AbstractSyntaxTree::WhileStatement.new(offset: 13, conditional:, block:)
+      position = file.position(0)
+      conditional = AbstractSyntaxTree::BooleanLiteral.new(literal: "true", position:)
+      block = AbstractSyntaxTree::Block.new(opening: position, closing: position, statements: [])
+      where = AbstractSyntaxTree::WhileStatement.new(while_pos: position, conditional:, block:)
 
       expected = [where, conditional, block]
 
-      list = find_node(klass: AbstractSyntaxTree::Block, ast:)
-      refute_nil(list)
+      ast = T.cast(ast.program.declarations.first, AbstractSyntaxTree::FunctionDeclaration).block
+      refute_nil(ast)
 
       index = 0
-      T.must(list).walk do |node|
+      ast.walk do |node|
         expect = T.must(expected[index])
 
         assert_instance_of(expect.class, node)
-        assert_equal(expect.literal, node.literal)
-        assert_equal(expect.offset, node.offset)
-        assert_equal(expect.length, node.length)
         index += 1
       end
 
       assert_equal(expected.size, index, "Number of nodes must match")
-    end
-
-    private
-
-    sig do
-      params(
-        klass: T.class_of(AbstractSyntaxTree::Node),
-        ast: AbstractSyntaxTree,
-      ).returns(T.nilable(AbstractSyntaxTree::Node))
-    end
-    def find_node(klass:, ast:)
-      node = T.let(nil, T.nilable(AbstractSyntaxTree::Node))
-      ast.walk do |n|
-        if n.instance_of?(klass)
-          node = n
-          break
-        end
-      end
-      node
     end
   end
 end

@@ -3,10 +3,12 @@
 
 module Minic
   class AbstractSyntaxTree
-    class WhileStatement < Node
-      sig { params(offset: Integer, conditional: Expression, block: Block).void }
-      def initialize(offset:, conditional:, block:)
-        super(literal: "where", offset:)
+    class WhileStatement
+      include Node
+
+      sig { params(while_pos: FileSet::Position, conditional: Expression, block: Block).void }
+      def initialize(while_pos:, conditional:, block:)
+        @position = while_pos
         @conditional = conditional
         @block = block
       end
@@ -17,7 +19,10 @@ module Minic
       sig { returns(Block) }
       attr_reader :block
 
-      sig { params(block: T.proc.params(node: Node).void).void }
+      sig { override.returns(FileSet::Position) }
+      attr_reader :position
+
+      sig { override.params(block: T.proc.params(node: Node).void).void }
       def walk(&block)
         yield(@conditional)
         @conditional.walk(&block)

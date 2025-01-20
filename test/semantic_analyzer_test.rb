@@ -21,7 +21,7 @@ module Minic
       ast = parser.parse
 
       error = assert_raises(SemanticAnalyzer::Error) { SemanticAnalyzer.new(ast:).check }
-      assert_equal("type missmatch 'double' vs 'bool'", error.message)
+      assert_match("type missmatch 'double' vs 'bool'", error.message)
     end
 
     test "double literal assigned to double variable does not raise error" do
@@ -40,7 +40,7 @@ module Minic
       ast = parser.parse
 
       error = assert_raises(SemanticAnalyzer::Error) { SemanticAnalyzer.new(ast:).check }
-      assert_equal("type missmatch 'double' vs 'bool'", error.message)
+      assert_match("type missmatch 'double' vs 'bool'", error.message)
     end
 
     test "integer literal assigned to integer variable does not raise error" do
@@ -59,7 +59,7 @@ module Minic
       ast = parser.parse
 
       error = assert_raises(SemanticAnalyzer::Error) { SemanticAnalyzer.new(ast:).check }
-      assert_equal("type missmatch 'int' vs 'bool'", error.message)
+      assert_match("type missmatch 'int' vs 'bool'", error.message)
     end
 
     test "string literal assigned to string variable does not raise error" do
@@ -78,7 +78,7 @@ module Minic
       ast = parser.parse
 
       error = assert_raises(SemanticAnalyzer::Error) { SemanticAnalyzer.new(ast:).check }
-      assert_equal("type missmatch 'string' vs 'bool'", error.message)
+      assert_match("type missmatch 'string' vs 'bool'", error.message)
     end
 
     test "variable declared void raises error" do
@@ -88,7 +88,7 @@ module Minic
       ast = parser.parse
 
       error = assert_raises(SemanticAnalyzer::Error) { SemanticAnalyzer.new(ast:).check }
-      assert_equal("variables may not be declared void", error.message)
+      assert_match("variables may not be declared void", error.message)
     end
 
     test "undeclared identifier in variable declaration assignment raises error" do
@@ -98,7 +98,7 @@ module Minic
       ast = parser.parse
 
       error = assert_raises(SemanticAnalyzer::Error) { SemanticAnalyzer.new(ast:).check }
-      assert_equal("undeclared variable in assignment", error.message)
+      assert_match("undeclared variable in assignment", error.message)
     end
 
     test "self-referenence in variable declaration assignment raises error" do
@@ -108,7 +108,7 @@ module Minic
       ast = parser.parse
 
       error = assert_raises(SemanticAnalyzer::Error) { SemanticAnalyzer.new(ast:).check }
-      assert_equal("undeclared variable in assignment", error.message)
+      assert_match("undeclared variable in assignment", error.message)
     end
 
     test "variable with matching type in variable declaration assignment does not raise error" do
@@ -127,7 +127,7 @@ module Minic
       ast = parser.parse
 
       error = assert_raises(SemanticAnalyzer::Error) { SemanticAnalyzer.new(ast:).check }
-      assert_equal("type missmatch 'int' vs 'bool'", error.message)
+      assert_match("type missmatch 'int' vs 'bool'", error.message)
     end
 
     test "integer binary expression matching assignment passes" do
@@ -146,7 +146,7 @@ module Minic
       ast = parser.parse
 
       error = assert_raises(SemanticAnalyzer::Error) { SemanticAnalyzer.new(ast:).check }
-      assert_equal("type missmatch 'int' vs 'bool'", error.message)
+      assert_match("type missmatch 'int' vs 'bool'", error.message)
     end
 
     test "boolean binary expression matching assignment passes" do
@@ -165,7 +165,7 @@ module Minic
       ast = parser.parse
 
       error = assert_raises(SemanticAnalyzer::Error) { SemanticAnalyzer.new(ast:).check }
-      assert_equal("arithmetic operators not compatible with boolean operands", error.message)
+      assert_match("arithmetic operators not compatible with boolean operands", error.message)
     end
 
     test "adding string expression matching assignment passes" do
@@ -184,7 +184,7 @@ module Minic
       ast = parser.parse
 
       error = assert_raises(SemanticAnalyzer::Error) { SemanticAnalyzer.new(ast:).check }
-      assert_equal("arithmetic operators not compatible with operands", error.message)
+      assert_match("arithmetic operators not compatible with operands", error.message)
     end
 
     test "sub expression with matching type in assignment passes" do
@@ -212,7 +212,7 @@ module Minic
       ast = parser.parse
 
       error = assert_raises(SemanticAnalyzer::Error) { SemanticAnalyzer.new(ast:).check }
-      assert_equal("type missmatch 'int' vs 'bool'", error.message)
+      assert_match("type missmatch 'int' vs 'bool'", error.message)
     end
 
     test "not unary expression in variable declaration assignment passes" do
@@ -231,7 +231,7 @@ module Minic
       ast = parser.parse
 
       error = assert_raises(SemanticAnalyzer::Error) { SemanticAnalyzer.new(ast:).check }
-      assert_equal("type missmatch 'bool' vs 'int'", error.message)
+      assert_match("type missmatch 'bool' vs 'int'", error.message)
     end
 
     test "function declaration passes" do
@@ -250,19 +250,19 @@ module Minic
       ast = parser.parse
 
       error = assert_raises(SemanticAnalyzer::Error) { SemanticAnalyzer.new(ast:).check }
-      assert_equal("function block must end with a return statement", error.message)
+      assert_match("function block must end with a return statement", error.message)
     end
 
     # parser error that there's no statement. expr_decl not a statement?
-    # test "function declaration with block not ending with return will raise error" do
-    #   file = FileSet::File.new(body: "void main() { int a; }")
-    #   lexer = Lexer.new(file:)
-    #   parser = Parser.new(lexer:)
-    #   ast = parser.parse
+    test "function declaration with block not ending with return will raise error" do
+      file = FileSet::File.new(body: "void main() { int a; }")
+      lexer = Lexer.new(file:)
+      parser = Parser.new(lexer:)
+      ast = parser.parse
 
-    #   error = assert_raises(SemanticAnalyzer::Error) { SemanticAnalyzer.new(ast:).check }
-    #   assert_equal("function block must end with a return statement", error.message)
-    # end
+      error = assert_raises(SemanticAnalyzer::Error) { SemanticAnalyzer.new(ast:).check }
+      assert_match("function block must end with a return statement", error.message)
+    end
 
     test "return statement with expression that references parameters passes" do
       file = FileSet::File.new(body: "int add(int a, int b) { return a + b; }")
@@ -289,7 +289,7 @@ module Minic
       ast = parser.parse
 
       error = assert_raises(SemanticAnalyzer::Error) { SemanticAnalyzer.new(ast:).check }
-      assert_equal("type missmatch 'bool' vs 'int'", error.message)
+      assert_match("type missmatch 'bool' vs 'int'", error.message)
     end
 
     test "function declaration with valid while statement passes" do
@@ -308,7 +308,7 @@ module Minic
       ast = parser.parse
 
       error = assert_raises(SemanticAnalyzer::Error) { SemanticAnalyzer.new(ast:).check }
-      assert_equal("type missmatch 'bool' vs 'int'", error.message)
+      assert_match("type missmatch 'bool' vs 'int'", error.message)
     end
 
     test "function declaration with valid assignment statement passes" do
@@ -327,7 +327,7 @@ module Minic
       ast = parser.parse
 
       error = assert_raises(SemanticAnalyzer::Error) { SemanticAnalyzer.new(ast:).check }
-      assert_equal("type missmatch 'bool' vs 'int'", error.message)
+      assert_match("type missmatch 'bool' vs 'int'", error.message)
     end
 
     test "function declaration with matching recursive function call passes" do
@@ -346,7 +346,7 @@ module Minic
       ast = parser.parse
 
       error = assert_raises(SemanticAnalyzer::Error) { SemanticAnalyzer.new(ast:).check }
-      assert_equal("type missmatch 'int' vs 'bool'", error.message)
+      assert_match("type missmatch 'int' vs 'bool'", error.message)
     end
 
     test "function declaration with valid arguments passes" do
@@ -365,7 +365,7 @@ module Minic
       ast = parser.parse
 
       error = assert_raises(SemanticAnalyzer::Error) { SemanticAnalyzer.new(ast:).check }
-      assert_equal("expected 2 arguments but got 1", error.message)
+      assert_match("expected 2 arguments but got 1", error.message)
     end
 
     test "function declaration with too many arguments count in return statement raises error" do
@@ -375,7 +375,7 @@ module Minic
       ast = parser.parse
 
       error = assert_raises(SemanticAnalyzer::Error) { SemanticAnalyzer.new(ast:).check }
-      assert_equal("expected 1 arguments but got 2", error.message)
+      assert_match("expected 1 arguments but got 2", error.message)
     end
 
     test "function declaration with miss-matched types in function call raises error" do
@@ -385,7 +385,7 @@ module Minic
       ast = parser.parse
 
       error = assert_raises(SemanticAnalyzer::Error) { SemanticAnalyzer.new(ast:).check }
-      assert_equal("type missmatch 'int' vs 'bool'", error.message)
+      assert_match("type missmatch 'int' vs 'bool'", error.message)
     end
   end
 end

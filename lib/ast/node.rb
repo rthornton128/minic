@@ -3,25 +3,15 @@
 
 module Minic
   class AbstractSyntaxTree
-    class Node
+    module Node
       extend T::Helpers
 
-      abstract!
+      interface!
 
-      sig { returns(String) }
-      attr_reader :literal
+      sig { abstract.returns(FileSet::Position) }
+      def position; end
 
-      sig { returns(Integer) }
-      attr_reader :length, :offset
-
-      sig { params(literal: String, offset: Integer).void }
-      def initialize(literal: "", offset: 0)
-        @length = T.let(literal.size, Integer)
-        @literal = literal
-        @offset = offset
-      end
-
-      sig { params(block: T.proc.params(node: Node).void).void }
+      sig { abstract.params(block: T.proc.params(node: Node).void).void }
       def walk(&block); end
     end
   end

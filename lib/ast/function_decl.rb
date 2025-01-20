@@ -3,10 +3,11 @@
 
 module Minic
   class AbstractSyntaxTree
-    class FunctionDeclaration < Node
+    class FunctionDeclaration
+      include Node
+
       sig { params(type: Keyword, identifier: Identifier, parameter_list: ParameterList, block: Block).void }
       def initialize(type:, identifier:, parameter_list:, block:)
-        super()
         @type = type
         @identifier = identifier
         @parameter_list = parameter_list
@@ -25,7 +26,12 @@ module Minic
       sig { returns(Block) }
       attr_reader :block
 
-      sig { params(block: T.proc.params(node: Node).void).void }
+      sig { override.returns(FileSet::Position) }
+      def position
+        @type.position
+      end
+
+      sig { override.params(block: T.proc.params(node: Node).void).void }
       def walk(&block)
         yield(@type)
         yield(@identifier)

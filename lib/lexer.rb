@@ -57,6 +57,9 @@ module Minic
       @reading_offset = T.let(0, Integer)
     end
 
+    sig { returns(FileSet::File) }
+    attr_reader :file
+
     sig { returns(Token) }
     def scan
       skip_whitespace
@@ -72,7 +75,7 @@ module Minic
 
       raise InvalidTokenError.new("Unexpected token", literal, offset) unless eof?
 
-      Token.new(token: :Eof, literal:, offset:)
+      Token.new(token: :Eof, literal:, position:)
     end
 
     sig { returns(T::Boolean) }
@@ -88,13 +91,12 @@ module Minic
     sig { void }
     def accept
       @offset = @reading_offset
+      @offset -= 1 if eof? && @offset > 0
     end
 
     sig { void }
     def advance
-      return if eof?
-
-      @reading_offset += 1
+      @reading_offset += 1 unless eof?
     end
 
     sig { returns(String) }
@@ -118,10 +120,10 @@ module Minic
         advance
       end
 
-      return Token.new(token: :Keyword, literal:, offset:) if KEYWORDS.include?(literal)
-      return Token.new(token: :Boolean, literal:, offset:) if BOOLEANS.include?(literal)
+      return Token.new(token: :Keyword, literal:, position:) if KEYWORDS.include?(literal)
+      return Token.new(token: :Boolean, literal:, position:) if BOOLEANS.include?(literal)
 
-      Token.new(token: :Identifier, literal:, offset:)
+      Token.new(token: :Identifier, literal:, position: @file.position(@offset))
     end
 
     sig { returns(Token) }
@@ -140,7 +142,7 @@ module Minic
         offset,
       ) if literal[0] == "0" && literal.size > 1
 
-      Token.new(token: :Integer, literal:, offset:)
+      Token.new(token: :Integer, literal:, position:)
     end
 
     sig { params(literal: String).returns(Token) }
@@ -153,7 +155,7 @@ module Minic
         advance
       end
 
-      Token.new(token: :Double, literal:, offset:)
+      Token.new(token: :Double, literal:, position:)
     end
 
     sig { returns(Token) }
@@ -175,7 +177,7 @@ module Minic
 
       literal += final_quote
       advance
-      Token.new(token: :String, literal:, offset:)
+      Token.new(token: :String, literal:, position:)
     end
 
     sig { returns(Token) }
@@ -186,7 +188,7 @@ module Minic
         advance
       end
 
-      Token.new(token: :Comment, literal:, offset:)
+      Token.new(token: :Comment, literal:, position:)
     end
 
     sig { params(literal: String).returns(Token) }
@@ -198,7 +200,7 @@ module Minic
         advance
       end
 
-      Token.new(token: T.must(SYMBOLS[literal]), literal:, offset:).tap { advance }
+      Token.new(token: T.must(SYMBOLS[literal]), literal:, position:).tap { advance }
     end
 
     sig { void }
@@ -209,6 +211,11 @@ module Minic
         @file << @reading_offset if current_char == "\n"
         advance
       end
+    end
+
+    sig { returns(FileSet::Position) }
+    def position
+      @file.position(@offset)
     end
   end
 end

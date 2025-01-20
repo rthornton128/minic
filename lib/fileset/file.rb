@@ -47,10 +47,13 @@ module Minic
 
       sig { params(offset: Integer).returns(Integer) }
       def column(offset)
-        row_offset = row(offset)
-        return offset + 1 if row_offset == 1
+        row = row(offset)
+        row_offset = @lines.fetch(row - 1)
 
-        (offset - row_offset) + 1
+        return offset + 1 if row == 1
+        return 1 if offset == row_offset
+
+        offset - row_offset
       end
     end
   end

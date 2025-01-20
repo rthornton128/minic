@@ -3,13 +3,19 @@
 
 module Minic
   class AbstractSyntaxTree
-    class Block < Node
-      sig { params(opening: Integer, closing: Integer, statements: T::Array[Statement]).void }
+    class Block
+      include Node
+
+      sig { params(opening: FileSet::Position, closing: FileSet::Position, statements: T::Array[Statement]).void }
       def initialize(opening:, closing:, statements:)
-        super()
         @opening = opening
         @closing = closing
         @statements = statements
+      end
+
+      sig { override.returns(FileSet::Position) }
+      def position
+        @opening
       end
 
       sig { returns(T::Array[Statement]) }
@@ -21,7 +27,7 @@ module Minic
         self
       end
 
-      sig { params(block: T.proc.params(node: Node).void).void }
+      sig { override.params(block: T.proc.params(node: Node).void).void }
       def walk(&block)
         @statements.each do |statement|
           yield(statement)

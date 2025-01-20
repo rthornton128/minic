@@ -2,6 +2,7 @@
 # frozen_string_literal: true
 
 require_relative "ast/node"
+require_relative "ast/base_literal"
 require_relative "ast/boolean_literal"
 require_relative "ast/double_literal"
 require_relative "ast/integer_literal"
@@ -31,7 +32,9 @@ module Minic
     Expression = T.type_alias do
       T.any(SimpleExpression, BinaryExpression, SubExpression, UnaryExpression, FunctionCall)
     end
-    Statement = T.type_alias { T.any(AssignmentStatement, IfStatement, ReturnStatement, WhileStatement, FunctionCall) }
+    Statement = T.type_alias do
+      T.any(AssignmentStatement, IfStatement, ReturnStatement, WhileStatement, FunctionCall, VariableDeclaration)
+    end
 
     sig { returns(Program) }
     attr_reader :program

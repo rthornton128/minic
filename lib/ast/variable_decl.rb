@@ -3,10 +3,10 @@
 
 module Minic
   class AbstractSyntaxTree
-    class VariableDeclaration < Node
+    class VariableDeclaration
+      include Node
       sig { params(type: Keyword, identifier: Identifier, assignment: T.nilable(Expression)).void }
       def initialize(type:, identifier:, assignment: nil)
-        super(literal: "", offset: type.offset)
         @type = type
         @identifier = identifier
         @assignment = assignment
@@ -20,6 +20,11 @@ module Minic
 
       sig { returns(Keyword) }
       attr_reader :type
+
+      sig { override.returns(FileSet::Position) }
+      def position
+        @type.position
+      end
 
       sig { override.params(block: T.proc.params(node: Node).void).void }
       def walk(&block)

@@ -28,5 +28,26 @@ module Minic
         file.position(1)
       end
     end
+
+    test "file with newline on first line" do
+      file = FileSet::File.new(body: "\nint a;")
+      file << 0
+      position = file.position(1)
+      assert(2, position.row)
+      assert(1, position.column)
+    end
+
+    test "function declaration with newline at start of block and newline before end of block" do
+      file = FileSet::File.new(body: "int f() {\n\treturn;\n}")
+      file << 9
+      file << 16
+      position = file.position(10)
+      assert(2, position.row)
+      assert(2, position.column)
+
+      position = file.position(17)
+      assert(3, position.row)
+      assert(1, position.column)
+    end
   end
 end

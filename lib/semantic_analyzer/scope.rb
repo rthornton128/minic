@@ -12,7 +12,10 @@ module Minic
 
       sig { params(identifier: String, type: Type).returns(Type) }
       def []=(identifier, type)
-        raise Error.new("identifier redefined", identifier, type.offset) unless @symbols[identifier].nil?
+        raise Error.new(
+          "identifier '#{identifier}' redefined",
+          position: type.position,
+        ) unless @symbols[identifier].nil?
 
         @symbols[identifier] = type
       end

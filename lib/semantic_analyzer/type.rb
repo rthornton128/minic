@@ -6,17 +6,17 @@ module Minic
     class Type
       TYPES = [:bool, :double, :int, :string, :void].freeze
 
-      sig { params(name: String, offset: Integer).void }
-      def initialize(name:, offset:)
+      sig { params(name: String, position: FileSet::Position).void }
+      def initialize(name:, position:)
         @name = name
-        @offset = offset
+        @position = position
       end
 
       sig { returns(String) }
       attr_reader :name
 
-      sig { returns(Integer) }
-      attr_reader :offset
+      sig { returns(FileSet::Position) }
+      attr_reader :position
 
       sig { params(other: Type).returns(T::Boolean) }
       def ==(other)
