@@ -7,8 +7,7 @@
 # 3. Move the offset to the next token without scanning it.
 
 require_relative "lexer/token"
-
-require "fileset"
+require_relative "fileset"
 
 module Minic
   class Lexer

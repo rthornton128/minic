@@ -1,7 +1,7 @@
 # typed: true
 # frozen_string_literal: true
 
-require "ast"
+require_relative "ast"
 
 module Minic
   class Parser
