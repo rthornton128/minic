@@ -17,18 +17,9 @@ module Minic
 
     private
 
-    sig { params(block: AbstractSyntaxTree::Block, parameters: T::Array[AbstractSyntaxTree::Parameter]).void }
-    def generate_block(block, parameters)
+    sig { params(block: AbstractSyntaxTree::Block).void }
+    def generate_block(block)
       @out.puts("{")
-
-      # ensure parameters are given zero values
-      parameters.each do |parameter|
-        generate_identifier(parameter.identifier)
-        @out.write("=")
-        generate_zero_value(parameter.type.literal)
-        generate_terminal
-      end
-
       block.statements.each { |statement| generate_statement(statement) }
       @out.puts("}")
     end
@@ -47,6 +38,7 @@ module Minic
         @out.write(expression.literal)
         generate_expression(expression.rhs)
       when AbstractSyntaxTree::FunctionCall
+        generate_function_call(expression)
       when AbstractSyntaxTree::SubExpression
         @out.write("(")
         generate_expression(expression.expression)
@@ -55,6 +47,22 @@ module Minic
         @out.write(expression.literal)
         generate_expression(expression.rhs)
       end
+    end
+
+    sig { params(arguments: T::Array[AbstractSyntaxTree::Expression]).void }
+    def generate_function_arguments(arguments)
+      @out.write("(")
+      arguments.each do |argument|
+        generate_expression(argument)
+        @out.write(",") unless argument == arguments.last
+      end
+      @out.write(")")
+    end
+
+    sig { params(function_call: AbstractSyntaxTree::FunctionCall).void }
+    def generate_function_call(function_call)
+      generate_identifier(function_call.identifier)
+      generate_function_arguments(function_call.arguments)
     end
 
     sig { params(function_decl: AbstractSyntaxTree::FunctionDeclaration).void }
@@ -72,7 +80,7 @@ module Minic
       generate_space
       generate_identifier(function_decl.identifier)
       generate_parameter_list(function_decl.parameter_list)
-      generate_block(function_decl.block, function_decl.parameter_list.parameters)
+      generate_block(function_decl.block)
     end
 
     sig { params(identifier: AbstractSyntaxTree::Identifier).void }
@@ -86,11 +94,11 @@ module Minic
       @out.write("(")
       generate_expression(if_statement.conditional)
       @out.write(")")
-      generate_block(if_statement.then_block, [])
+      generate_block(if_statement.then_block)
 
       unless if_statement.else_block.nil?
         @out.write("else")
-        generate_block(if_statement.then_block, [])
+        generate_block(if_statement.then_block)
       end
     end
 
@@ -142,6 +150,7 @@ module Minic
         @out.write("=")
         generate_expression(T.must(statement.rhs))
       when AbstractSyntaxTree::FunctionCall
+        generate_function_call(statement)
       when AbstractSyntaxTree::IfStatement
         generate_if_statement(statement)
       when AbstractSyntaxTree::ReturnStatement
@@ -198,7 +207,7 @@ module Minic
       @out.write("(")
       generate_expression(while_statement.conditional)
       @out.write(")")
-      generate_block(while_statement.block, [])
+      generate_block(while_statement.block)
     end
 
     sig { params(type_name: String).void }
