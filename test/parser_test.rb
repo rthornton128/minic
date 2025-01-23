@@ -647,6 +647,60 @@ module Minic
       assert_equal(expected.size, index, "Number of nodes must match")
     end
 
+    test "parse variable declaration with multiple expressions in assignment" do
+      file = FileSet::File.new(body: "int i = (1 + 2) + -3")
+      lexer = Lexer.new(file:)
+      parser = Parser.new(lexer:)
+
+      ast = parser.parse
+
+      position = file.position(0)
+      first_integer = AbstractSyntaxTree::IntegerLiteral.new(literal: "1", position:)
+      second_integer = AbstractSyntaxTree::IntegerLiteral.new(literal: "2", position:)
+      first_binary_expr = AbstractSyntaxTree::BinaryExpression.new(
+        literal: "+",
+        position:,
+        lhs: first_integer,
+        rhs: second_integer,
+      )
+      sub_expr = AbstractSyntaxTree::SubExpression.new(
+        opening: position,
+        closing: position,
+        expression: first_binary_expr,
+      )
+      third_integer = AbstractSyntaxTree::IntegerLiteral.new(literal: "3", position:)
+      unary_expr = AbstractSyntaxTree::UnaryExpression.new(literal: "-", position:, expression: third_integer)
+      second_binary_expr = AbstractSyntaxTree::BinaryExpression.new(
+        literal: "+",
+        position:,
+        lhs: sub_expr,
+        rhs: unary_expr,
+      )
+
+      expected = [
+        sub_expr,
+        first_binary_expr,
+        first_integer,
+        second_integer,
+        unary_expr,
+        third_integer,
+      ]
+
+      ast = T.cast(ast.program.declarations.first, AbstractSyntaxTree::VariableDeclaration).assignment
+      refute_nil(ast)
+      assert_instance_of(second_binary_expr.class, ast)
+
+      index = 0
+      T.must(ast).walk do |node|
+        expect = T.must(expected[index])
+
+        assert_instance_of(expect.class, node)
+        index += 1
+      end
+
+      assert_equal(expected.size, index, "Number of nodes must match")
+    end
+
     test "parse function declaration with while statement in block" do
       file = FileSet::File.new(body: "int main() { while(true) {}; }")
       lexer = Lexer.new(file:)
