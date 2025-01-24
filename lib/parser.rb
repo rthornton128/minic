@@ -1,7 +1,7 @@
 # typed: true
 # frozen_string_literal: true
 
-require "ast"
+require_relative "ast"
 
 module Minic
   class Parser
@@ -92,10 +92,9 @@ module Minic
 
     sig { returns(AbstractSyntaxTree::Expression) }
     def parse_expression
-      return parse_unary if any?(:Minus, :Exclamation)
-      return parse_sub if any?(:LeftParen)
-
-      expression = parse_simple
+      expression = parse_unary if any?(:Minus, :Exclamation)
+      expression = parse_sub if any?(:LeftParen)
+      expression = parse_simple if expression.nil?
 
       return parse_binary(lhs: expression) if token.operator?
 

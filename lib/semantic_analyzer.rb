@@ -41,7 +41,7 @@ module Minic
       block_scope = Scope.new(parent: scope)
       func_decl.parameter_list.parameters.each do |parameter|
         param_type = type_of(node: parameter.type, scope:)
-        scope[parameter.identifier.literal] = param_type
+        block_scope[parameter.identifier.literal] = param_type
       end
 
       block = func_decl.block
@@ -83,6 +83,8 @@ module Minic
         assert_types(return_type, stmt_type)
 
         check_expression(expression: T.must(statement.expression), scope:) unless statement.expression.nil?
+      when AbstractSyntaxTree::VariableDeclaration
+        check_variable_decl(var_decl: statement, scope:)
       when AbstractSyntaxTree::WhileStatement
         # conditional must evaluate to a boolean
         cond_type = type_of(node: statement.conditional, scope:)
