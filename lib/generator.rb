@@ -109,6 +109,7 @@ module Minic
         generate_function_implementation(declaration)
       when AbstractSyntaxTree::VariableDeclaration
         generate_variable_decl(declaration)
+        generate_terminal
       end
     end
 
@@ -158,6 +159,7 @@ module Minic
         generate_space
         generate_expression(T.must(statement.expression)) unless statement.expression.nil?
       when AbstractSyntaxTree::VariableDeclaration
+        generate_variable_decl(statement)
       when AbstractSyntaxTree::WhileStatement
         generate_while_statement(statement)
       else
@@ -197,8 +199,6 @@ module Minic
       else
         generate_expression(T.must(declaration.assignment))
       end
-
-      generate_terminal
     end
 
     sig { params(while_statement: AbstractSyntaxTree::WhileStatement).void }
