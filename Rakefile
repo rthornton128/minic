@@ -25,12 +25,13 @@ task :build_lib do
 end
 
 task build: :build_lib do
-  command("gcc", "-o", "build/program", "-L", "build", "-lminic", "build/program.c")
+  command("gcc", "-o", "build/program", "-g", "-L", "build", "-lminic", "build/program.c")
 end
 
-desc "Run Minic"
-task :run do
-  ruby "./lib/minic.rb"
+desc "Compile with Minic"
+task :compile, [:path] do |_task, args|
+  command("ruby", "-Ilib", "./lib/cmd/minic", args[:path])
+  Rake::Task[:build].invoke
 end
 
 desc "Run linting (Rubocop)"
