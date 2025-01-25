@@ -30,7 +30,7 @@ end
 
 desc "Compile with Minic"
 task :compile, [:path] do |_task, args|
-  command("ruby", "-Ilib", "./lib/cmd/minic", args[:path])
+  command("./lib/cmd/minic", args[:path] || "")
   Rake::Task[:build].invoke
 end
 
