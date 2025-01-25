@@ -80,7 +80,7 @@ module Minic
     end
 
     test "generate includes if-else statement" do
-      file = Minic::FileSet::File.new(name: "", body: "void main() { if(false) {} else {}; return; }")
+      file = Minic::FileSet::File.new(name: "", body: "void main() { if(false) {} else {} return; }")
       lexer = Minic::Lexer.new(file:)
       parser = Minic::Parser.new(lexer:)
       ast = parser.parse
@@ -93,7 +93,7 @@ module Minic
     end
 
     test "generate includes while statement" do
-      file = Minic::FileSet::File.new(name: "", body: "void main() { while(false) {}; return; }")
+      file = Minic::FileSet::File.new(name: "", body: "void main() { while(false) {} return; }")
       lexer = Minic::Lexer.new(file:)
       parser = Minic::Parser.new(lexer:)
       ast = parser.parse
