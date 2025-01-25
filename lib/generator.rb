@@ -109,7 +109,6 @@ module Minic
         generate_function_implementation(declaration)
       when AbstractSyntaxTree::VariableDeclaration
         generate_variable_decl(declaration)
-        generate_terminal
       end
     end
 
@@ -150,14 +149,17 @@ module Minic
         generate_identifier(statement.lhs)
         @out.write("=")
         generate_expression(T.must(statement.rhs))
+        generate_terminal
       when AbstractSyntaxTree::FunctionCall
         generate_function_call(statement)
+        generate_terminal
       when AbstractSyntaxTree::IfStatement
         generate_if_statement(statement)
       when AbstractSyntaxTree::ReturnStatement
         @out.write("return")
         generate_space
         generate_expression(T.must(statement.expression)) unless statement.expression.nil?
+        generate_terminal
       when AbstractSyntaxTree::VariableDeclaration
         generate_variable_decl(statement)
       when AbstractSyntaxTree::WhileStatement
@@ -165,8 +167,6 @@ module Minic
       else
         T.absurd(statement)
       end
-
-      generate_terminal
     end
 
     sig { void }
@@ -199,6 +199,7 @@ module Minic
       else
         generate_expression(T.must(declaration.assignment))
       end
+      generate_terminal
     end
 
     sig { params(while_statement: AbstractSyntaxTree::WhileStatement).void }

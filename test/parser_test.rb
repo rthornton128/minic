@@ -510,7 +510,7 @@ module Minic
     end
 
     test "parse function declaration with if statement in block" do
-      file = FileSet::File.new(body: "int main() { if(true) {}; }")
+      file = FileSet::File.new(body: "int main() { if(true) {} }")
       lexer = Lexer.new(file:)
       parser = Parser.new(lexer:)
 
@@ -566,7 +566,7 @@ module Minic
     end
 
     test "parse function declaration with if statement with else clause in block" do
-      file = FileSet::File.new(body: "int main() { if(true) {} else {}; }")
+      file = FileSet::File.new(body: "int main() { if(true) {} else {} }")
       lexer = Lexer.new(file:)
       parser = Parser.new(lexer:)
 
@@ -702,7 +702,7 @@ module Minic
     end
 
     test "parse function declaration with while statement in block" do
-      file = FileSet::File.new(body: "int main() { while(true) {}; }")
+      file = FileSet::File.new(body: "int main() { while(true) {} }")
       lexer = Lexer.new(file:)
       parser = Parser.new(lexer:)
 

@@ -32,7 +32,7 @@ module Minic
     def expect(type, literal = "")
       name = literal.empty? ? type.to_s.downcase : literal
       raise UnexpectedTokenError.new(
-        "expected #{name}",
+        "expected #{name}, got: '#{token.literal}'",
         position: token.position,
       ) unless token.token == type || token.literal == literal
 
@@ -60,7 +60,7 @@ module Minic
 
       return parse_function_decl(type, identifier) if any?(:LeftParen)
 
-      parse_variable_decl(type, identifier).tap { expect(:SemiColon) }
+      parse_variable_decl(type, identifier)
     end
 
     sig { returns(AbstractSyntaxTree::Keyword) }
@@ -194,6 +194,7 @@ module Minic
     end
     def parse_variable_decl(type, identifier)
       assignment = parse_assignment if any?(:Equal)
+      expect(:SemiColon)
 
       AbstractSyntaxTree::VariableDeclaration.new(type:, identifier:, assignment:)
     end
@@ -239,10 +240,7 @@ module Minic
       opening = expect(:LeftBrace)
 
       statements = []
-      until any?(:RightBrace) || @lexer.eof?
-        statements << parse_statement
-        expect(:SemiColon)
-      end
+      statements << parse_statement until any?(:RightBrace) || @lexer.eof?
 
       closing = expect(:RightBrace)
 
@@ -270,7 +268,7 @@ module Minic
       if token.token == :Identifier
         identifier = parse_identifier
         return parse_assignment_statement(identifier) if any?(:Equal)
-        return parse_function_call(identifier) if any?(:LeftParen)
+        return parse_function_call(identifier).tap { expect(:SemiColon) } if any?(:LeftParen)
 
         raise UnexpectedTokenError.new("unexpected token", token.literal, position: token.position)
       end
@@ -283,6 +281,7 @@ module Minic
       equal_pos = expect(:Equal)
 
       rhs = parse_expression
+      expect(:SemiColon)
 
       AbstractSyntaxTree::AssignmentStatement.new(equal_pos:, lhs:, rhs:)
     end
@@ -307,6 +306,7 @@ module Minic
       return_pos = expect(:Keyword, "return")
 
       expression = parse_expression unless any?(:SemiColon) # rubocop:disable Style/InvertibleUnlessCondition
+      expect(:SemiColon)
 
       AbstractSyntaxTree::ReturnStatement.new(return_pos:, expression:)
     end

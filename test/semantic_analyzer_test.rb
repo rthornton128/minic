@@ -282,7 +282,7 @@ module Minic
     end
 
     test "function declaration with valid if statement passes" do
-      file = FileSet::File.new(body: "void main() { if(true) {} else {}; return; }")
+      file = FileSet::File.new(body: "void main() { if(true) {} else {} return; }")
       lexer = Lexer.new(file:)
       parser = Parser.new(lexer:)
       ast = parser.parse
@@ -291,7 +291,7 @@ module Minic
     end
 
     test "function declaration with non-boolean conditional if statement raises error" do
-      file = FileSet::File.new(body: "void main() { if(1) {} else {}; return; }")
+      file = FileSet::File.new(body: "void main() { if(1) {} else {} return; }")
       lexer = Lexer.new(file:)
       parser = Parser.new(lexer:)
       ast = parser.parse
@@ -301,7 +301,7 @@ module Minic
     end
 
     test "function declaration with valid while statement passes" do
-      file = FileSet::File.new(body: "void main() { while(true) {}; return; }")
+      file = FileSet::File.new(body: "void main() { while(true) {} return; }")
       lexer = Lexer.new(file:)
       parser = Parser.new(lexer:)
       ast = parser.parse
@@ -310,7 +310,7 @@ module Minic
     end
 
     test "function declaration with non-boolean conditional while statement raises error" do
-      file = FileSet::File.new(body: "void main() { while(1) {}; return; }")
+      file = FileSet::File.new(body: "void main() { while(1) {} return; }")
       lexer = Lexer.new(file:)
       parser = Parser.new(lexer:)
       ast = parser.parse
