@@ -19,7 +19,7 @@
 ## Specific to RubyMotion:
 .dat*
 .repl_history
-build/
+build/*
 *.bridgesupport
 build-iPhoneOS/
 build-iPhoneSimulator/
@@ -54,3 +54,6 @@ build-iPhoneSimulator/
 
 # Used by RuboCop. Remote config files pulled in from inherit_from directive.
 # .rubocop-https?--*
+
+# Don't ignore .keep files
+!.keep

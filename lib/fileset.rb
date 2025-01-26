@@ -6,7 +6,12 @@ require_relative "fileset/position"
 
 module Minic
   class FileSet
+    extend T::Generic
+    include Enumerable
+
     class InvalidOffsetError < StandardError; end
+
+    Type = type_member(:out) { { fixed: FileSet::File } }
 
     sig { void }
     def initialize
@@ -17,6 +22,11 @@ module Minic
     def <<(file)
       @files << file
       self
+    end
+
+    sig { override.params(block: T.proc.params(arg0: Type).returns(BasicObject)).void }
+    def each(&block)
+      @files.each(&block)
     end
 
     sig { params(offset: Integer).returns(Position) }

@@ -30,20 +30,20 @@ end
 
 desc "Compile with Minic"
 task :compile, [:path] do |_task, args|
-  command("ruby", "-Ilib", "./lib/cmd/minic", args[:path])
+  command("bin/minic", args[:path] || "")
   Rake::Task[:build].invoke
 end
 
 desc "Run linting (Rubocop)"
 task :style do
-  command("./bin/rubocop")
+  command("bin/rubocop")
 end
 task st: :style
 task lint: :style
 
 desc "Run typechecking"
 task :typecheck do
-  command("./bin/spoom", "srb", "tc")
+  command("bin/spoom", "srb", "tc")
 end
 task tc: :typecheck
 

@@ -1,0 +1,43 @@
+#!/usr/bin/env -S ruby -Ilib
+# typed: true
+# frozen_string_literal: true
+
+require "minic"
+
+pathname = T.let(ARGV[0], T.nilable(String))
+
+if pathname.nil? || pathname == ""
+  puts "Input name is empty! Please provide a file or directory to compile"
+  exit(1)
+end
+
+fileset = Minic::FileSet.new
+
+if File.directory?(pathname)
+  Dir["#{pathname}/**/*.mc"].each do |filename|
+    body = File.open(filename).read
+    fileset << Minic::FileSet::File.new(name: filename, body:)
+  end
+else
+  body = File.open(pathname).read
+  fileset << Minic::FileSet::File.new(name: pathname, body:)
+end
+
+begin
+  ast = T.let(nil, T.nilable(Minic::AbstractSyntaxTree))
+  fileset.each do |file|
+    lexer = Minic::Lexer.new(file:)
+    parser = Minic::Parser.new(lexer:, ast:)
+    ast = parser.parse
+  end
+
+  Minic::SemanticAnalyzer.new(ast: T.must(ast)).check
+
+  out = File.open("./build/program.c", "w")
+  Minic::Generator.new(ast: T.must(ast), out:).generate
+rescue Minic::Error => e
+  puts "---"
+  puts "Error: #{e}"
+  puts "---"
+  exit(1)
+end
