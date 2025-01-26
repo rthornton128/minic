@@ -728,5 +728,45 @@ module Minic
 
       assert_equal(expected.size, index, "Number of nodes must match")
     end
+
+    test "parse two files with simple variable declaration" do
+      file1 = FileSet::File.new(name: "one", body: "bool b;")
+      file2 = FileSet::File.new(name: "two", body: "int i;")
+
+      # parse first file
+      lexer = Lexer.new(file: file1)
+      parser = Parser.new(lexer:)
+      ast = parser.parse
+
+      # parse second file, reusing ast
+      lexer = Lexer.new(file: file2)
+      parser = Parser.new(lexer:, ast:)
+      ast = parser.parse
+
+      position = file1.position(0)
+      type1 = AbstractSyntaxTree::Keyword.new(literal: "bool", position:)
+      identifier1 = AbstractSyntaxTree::Identifier.new(literal: "b", position:)
+      vardecl1 = AbstractSyntaxTree::VariableDeclaration.new(type: type1, identifier: identifier1, assignment: nil)
+
+      position = file2.position(0)
+      type2 = AbstractSyntaxTree::Keyword.new(literal: "bool", position:)
+      identifier2 = AbstractSyntaxTree::Identifier.new(literal: "b", position:)
+      vardecl2 = AbstractSyntaxTree::VariableDeclaration.new(type: type2, identifier: identifier2, assignment: nil)
+
+      expected = [vardecl1, type1, identifier1, vardecl2, type2, identifier2]
+
+      ast = T.cast(ast.program, AbstractSyntaxTree::Program)
+      refute_nil(ast)
+
+      index = 0
+      ast.walk do |node|
+        expect = T.must(expected[index])
+
+        assert_instance_of(expect.class, node)
+        index += 1
+      end
+
+      assert_equal(expected.size, index, "Number of nodes must match")
+    end
   end
 end

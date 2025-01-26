@@ -7,15 +7,22 @@ module Minic
   class Parser
     class UnexpectedTokenError < Error; end
 
-    sig { params(lexer: Lexer).void }
-    def initialize(lexer:)
+    sig { params(lexer: Lexer, ast: T.nilable(AbstractSyntaxTree)).void }
+    def initialize(lexer:, ast: nil)
       @lexer = lexer
       @token = T.let(lexer.scan, Lexer::Token)
+      @ast = T.let(ast || empty_abstract_syntax_tree, AbstractSyntaxTree)
+    end
+
+    sig { returns(AbstractSyntaxTree) }
+    def empty_abstract_syntax_tree
+      AbstractSyntaxTree.new(program: AbstractSyntaxTree::Program.new(position: @lexer.file.position(0)))
     end
 
     sig { returns(AbstractSyntaxTree) }
     def parse
-      AbstractSyntaxTree.new(program: parse_program)
+      @ast.program << parse_declarations until @lexer.eof?
+      @ast
     end
 
     private
@@ -42,15 +49,6 @@ module Minic
     sig { returns(Lexer::Token) }
     def next_token
       @token = @lexer.scan
-    end
-
-    sig { returns(AbstractSyntaxTree::Program) }
-    def parse_program
-      program = AbstractSyntaxTree::Program.new(position: @lexer.file.position(0))
-
-      program << parse_declarations until @lexer.eof?
-
-      program
     end
 
     sig { returns(AbstractSyntaxTree::Declaration) }
