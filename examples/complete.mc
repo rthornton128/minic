@@ -20,5 +20,7 @@ int main() {
     global = global + 1;
   }
 
+  print("%d - %s\n", global, s);
+
   return add(0, 0);
 }

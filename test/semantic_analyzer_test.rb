@@ -395,5 +395,24 @@ module Minic
       error = assert_raises(SemanticAnalyzer::Error) { SemanticAnalyzer.new(ast:).check }
       assert_match("type missmatch 'int' vs 'bool'", error.message)
     end
+
+    test "function declaration with built-in call passes" do
+      file = FileSet::File.new(body: "void main() { print(\"hello\"); return; }")
+      lexer = Lexer.new(file:)
+      parser = Parser.new(lexer:)
+      ast = parser.parse
+
+      SemanticAnalyzer.new(ast:).check
+    end
+
+    test "function declaration with bad return value fails" do
+      file = FileSet::File.new(body: "int main() { return print(\"hello\"); }")
+      lexer = Lexer.new(file:)
+      parser = Parser.new(lexer:)
+      ast = parser.parse
+
+      error = assert_raises(SemanticAnalyzer::Error) { SemanticAnalyzer.new(ast:).check }
+      assert_match("type missmatch 'int' vs 'void'", error.message)
+    end
   end
 end

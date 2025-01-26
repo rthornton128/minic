@@ -19,13 +19,13 @@ task :build_lib do
     command("gcc", "-c", filepath, "-o", object)
   end
 
-  command("ar", "rcs", "build/libminic.a", *objects)
+  command("ar", "-rcs", "build/libminic.a", *objects)
 
   cp Dir["src/*.h"], "build"
 end
 
 task build: :build_lib do
-  command("gcc", "-o", "build/program", "-g", "-L", "build", "-lminic", "build/program.c")
+  command("gcc", "build/program.c", "-Ibuild", "-Lbuild", "-lminic", "-o", "build/program")
 end
 
 desc "Compile with Minic"
