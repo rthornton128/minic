@@ -3,6 +3,7 @@
 
 require_relative "semantic_analyzer/type"
 require_relative "semantic_analyzer/function_type"
+require_relative "semantic_analyzer/built_in_type"
 require_relative "semantic_analyzer/scope"
 
 module Minic
@@ -18,6 +19,7 @@ module Minic
     def check
       program = @ast.program
       scope = Scope.new(parent: nil)
+      insert_builtins_into_scope(scope:)
 
       program.declarations.each do |declaration|
         case declaration
@@ -62,6 +64,20 @@ module Minic
       end
     end
 
+    sig { params(func_call: AbstractSyntaxTree::FunctionCall, scope: Scope).void }
+    def check_built_in(func_call:, scope:)
+      built_in_type = T.cast(type_of(node: func_call, scope:), BuiltInType)
+
+      # built-ins can include varargs and untyped behaviour, so it's much more relaxed
+      param_types = built_in_type.param_types
+      args = func_call.arguments
+
+      param_types.each_with_index do |param_type, i|
+        arg_type = type_of(node: T.must(args[i]), scope:)
+        assert_types(param_type, arg_type)
+      end
+    end
+
     sig { params(statement: AbstractSyntaxTree::Statement, return_type: Type, scope: Scope).void }
     def check_statement(statement:, return_type:, scope:)
       case statement
@@ -97,6 +113,8 @@ module Minic
     sig { params(func_call: AbstractSyntaxTree::FunctionCall, scope: Scope).void }
     def check_function_call(func_call:, scope:)
       func_type = T.cast(type_of(node: func_call, scope:), FunctionType)
+
+      check_built_in(func_call:, scope:) if func_type.built_in?
 
       param_types = func_type.param_types
       args = func_call.arguments
@@ -175,6 +193,17 @@ module Minic
         "type missmatch '#{a}' vs '#{b}'",
         position: b.position,
       ) if a != b
+    end
+
+    sig { params(scope: Scope).void }
+    def insert_builtins_into_scope(scope:)
+      position = FileSet::Position.new(name: "built-in functions", row: 1, column: 1)
+      scope["print"] = BuiltInType.new(
+        return_type: Type.new(name: "void", position:),
+        param_types: [
+          Type.new(name: "string", position:),
+        ],
+      )
     end
 
     sig { params(node: AbstractSyntaxTree::Node, scope: Scope).returns(Type) }
