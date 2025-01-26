@@ -4,23 +4,37 @@
 
 require "minic"
 
-name = T.let(ARGV[0], T.nilable(String))
+pathname = T.let(ARGV[0], T.nilable(String))
 
-if name.nil? || name == ""
-  puts "Input file is empty! Please provide a file to compile"
+if pathname.nil? || pathname == ""
+  puts "Input name is empty! Please provide a file or directory to compile"
   exit(1)
 end
 
-body = File.open(name).read
+fileset = Minic::FileSet.new
+
+if File.directory?(pathname)
+  Dir["#{pathname}/**/*.mc"].each do |filename|
+    body = File.open(filename).read
+    fileset << Minic::FileSet::File.new(name: filename, body:)
+  end
+else
+  body = File.open(pathname).read
+  fileset << Minic::FileSet::File.new(name: pathname, body:)
+end
+
 begin
-  file = Minic::FileSet::File.new(name:, body:)
-  lexer = Minic::Lexer.new(file:)
-  parser = Minic::Parser.new(lexer:)
-  ast = parser.parse
-  Minic::SemanticAnalyzer.new(ast:).check
+  ast = T.let(nil, T.nilable(Minic::AbstractSyntaxTree))
+  fileset.each do |file|
+    lexer = Minic::Lexer.new(file:)
+    parser = Minic::Parser.new(lexer:, ast:)
+    ast = parser.parse
+  end
+
+  Minic::SemanticAnalyzer.new(ast: T.must(ast)).check
 
   out = File.open("./build/program.c", "w")
-  Minic::Generator.new(ast:, out:).generate
+  Minic::Generator.new(ast: T.must(ast), out:).generate
 rescue Minic::Error => e
   puts "---"
   puts "Error: #{e}"
