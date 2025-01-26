@@ -114,7 +114,7 @@ module Minic
     def check_function_call(func_call:, scope:)
       func_type = T.cast(type_of(node: func_call, scope:), FunctionType)
 
-      check_built_in(func_call:, scope:) if func_type.built_in?
+      return check_built_in(func_call:, scope:) if func_type.built_in?
 
       param_types = func_type.param_types
       args = func_call.arguments
