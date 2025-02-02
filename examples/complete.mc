@@ -1,3 +1,4 @@
+// comment
 int global;
 
 int add(int a, int b) {
@@ -17,7 +18,7 @@ int main() {
       b = true;
     }
 
-    global = global + 1;
+    global = global + 1; // note
   }
 
   print("%d - %s\n", global, s);
