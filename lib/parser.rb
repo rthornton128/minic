@@ -10,7 +10,7 @@ module Minic
     sig { params(lexer: Lexer, ast: T.nilable(AbstractSyntaxTree)).void }
     def initialize(lexer:, ast: nil)
       @lexer = lexer
-      @token = T.let(lexer.scan, Lexer::Token)
+      @token = T.let(next_token, Lexer::Token)
       @ast = T.let(ast || empty_abstract_syntax_tree, AbstractSyntaxTree)
     end
 
@@ -49,6 +49,11 @@ module Minic
     sig { returns(Lexer::Token) }
     def next_token
       @token = @lexer.scan
+      if any?(:Comment)
+        next_token
+      else
+        @token
+      end
     end
 
     sig { returns(AbstractSyntaxTree::Declaration) }

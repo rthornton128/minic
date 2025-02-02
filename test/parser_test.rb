@@ -20,6 +20,29 @@ module Minic
       assert_equal(1, index, "Number of nodes must match")
     end
 
+    test "parse program for comment only file" do
+      file = FileSet::File.new(body: "// comment")
+      lexer = Lexer.new(file:)
+      parser = Parser.new(lexer:)
+
+      ast = parser.parse
+      program = ast.program
+
+      index = 0
+      program.walk do
+        index += 1
+      end
+      assert_equal(0, index, "Number of nodes must match")
+    end
+
+    test "parse program with comment after var decl" do
+      file = FileSet::File.new(body: "int i; // comment")
+      lexer = Lexer.new(file:)
+      parser = Parser.new(lexer:)
+
+      parser.parse
+    end
+
     test "parse simple variable declaration" do
       file = FileSet::File.new(body: "int x;")
       lexer = Lexer.new(file:)
